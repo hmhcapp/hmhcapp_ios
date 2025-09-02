@@ -31,8 +31,12 @@ target 'Runner' do
 end
 
 post_install do |installer|
-  flutter_additional_ios_build_settings(installer)
+  # CocoaPods 1.16+: call Flutter helper per target (fixes platform_name error)
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
 
+  # Project-wide build settings
   installer.pods_project.targets.each do |t|
     t.build_configurations.each do |c|
       c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
