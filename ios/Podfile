@@ -1,7 +1,27 @@
 platform :ios, '15.0'
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-require_relative '../Flutter/podhelper.rb'
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated = File.expand_path(File.join('Flutter', 'Generated.xcconfig'), __dir__)
+  unless File.exist?(generated)
+    # Try env var (Codemagic usually has this), otherwise fail with a clear msg
+    return ENV['FLUTTER_ROOT'] if ENV['FLUTTER_ROOT']
+    raise "Generated.xcconfig not found. Run `flutter pub get` locally once, or ensure FLUTTER_ROOT is set."
+  end
+  File.foreach(generated) do |line|
+    m = line.match(/FLUTTER_ROOT\=(.*)/)
+    return m[1].strip if m
+  end
+  raise "FLUTTER_ROOT not found in Generated.xcconfig"
+end
+
+require File.expand_path(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb'))
 
 flutter_ios_podfile_setup
 
@@ -13,7 +33,6 @@ end
 
 post_install do |installer|
   flutter_additional_ios_build_settings(installer)
-  # Enforce iOS 15 for all pods
   installer.pods_project.targets.each do |t|
     t.build_configurations.each { |c| c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0' }
   end
