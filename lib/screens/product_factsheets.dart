@@ -1,12 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:open_filex/open_filex.dart';
 
-/// =======================
-/// Data Models
-/// =======================
+/// -------------------- MODELS --------------------
 
 class PdfInfo {
   final String name;
@@ -14,115 +14,260 @@ class PdfInfo {
   const PdfInfo(this.name, this.url);
 }
 
-abstract class ContentItem {
-  const ContentItem();
-}
+abstract class ContentItem {}
 
-class ContentItemSubCategory extends ContentItem {
+class SubCategoryItem extends ContentItem {
   final String title;
   final List<PdfInfo> pdfs;
-  const ContentItemSubCategory(this.title, this.pdfs);
+  SubCategoryItem(this.title, this.pdfs);
 }
 
-class ContentItemPdf extends ContentItem {
+class PdfItem extends ContentItem {
   final PdfInfo info;
-  const ContentItemPdf(this.info);
+  PdfItem(this.info);
 }
 
 class CategoryData {
   final String title;
   final List<ContentItem> items;
-  const CategoryData(this.title, this.items);
+  CategoryData(this.title, this.items);
 }
 
-/// =======================
-/// Data (exported)
-/// =======================
+/// -------------------- FACTSHEETS DATA --------------------
 
-const List<CategoryData> underfloorHeatingFactsheets = [
+final List<CategoryData> underfloorHeatingFactsheetsData = [
   CategoryData("Heating Mats", [
-    ContentItemSubCategory("Heat Mat Pro", [
-      // PdfInfo("PKM-065 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-065W-heating-mat-factsheet.pdf"),
-      PdfInfo("PKM-110 factsheet",
-          "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-110W-heating-mat-factsheet.pdf"),
-      PdfInfo("PKM-160 factsheet",
-          "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-160W-heating-mat-factsheet.pdf"),
-      PdfInfo("PKM-200 factsheet",
-          "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-200W-heating-mat-factsheet.pdf"),
-      PdfInfo("PKM-240 factsheet",
-          "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-240W-heating-mat-factsheet.pdf"),
+    SubCategoryItem("Heat Mat Pro", [
+      PdfInfo("PKM-110 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-110W-heating-mat-factsheet.pdf"),
+      PdfInfo("PKM-160 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-160W-heating-mat-factsheet.pdf"),
+      PdfInfo("PKM-200 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-200W-heating-mat-factsheet.pdf"),
+      PdfInfo("PKM-240 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-240W-heating-mat-factsheet.pdf"),
     ]),
-    ContentItemSubCategory("Heat My Home", [
-      PdfInfo("HMH160W factsheet",
-          "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/HMHMAT/Heat-My-Home-HMHMAT-factsheet.pdf"),
+    SubCategoryItem("Heat My Home", [
+      PdfInfo("HMH160W factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/HMHMAT/Heat-My-Home-HMHMAT-factsheet.pdf"),
     ]),
   ]),
   CategoryData("Heating Cables", [
-    ContentItemSubCategory("Heat Mat Pro", [
-      PdfInfo("PKC-3.0 factsheet",
-          "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKC/Heat-Mat-PKC-3mm-cable-factsheet.pdf"),
-      PdfInfo("PKC-5.0 factsheet",
-          "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKC/Heat-Mat-PKC-5mm-cable-factsheet.pdf"),
+    SubCategoryItem("Heat Mat Pro", [
+      PdfInfo("PKC-3.0 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKC/Heat-Mat-PKC-3mm-cable-factsheet.pdf"),
+      PdfInfo("PKC-5.0 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKC/Heat-Mat-PKC-5mm-cable-factsheet.pdf"),
     ]),
-    ContentItemSubCategory("Heat My Home", [
-      PdfInfo("HMHCAB factsheet",
-          "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/HMHCAB/Heat-My-Home-HMHCAB-factsheet.pdf"),
+    SubCategoryItem("Heat My Home", [
+      PdfInfo("HMHCAB factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/HMHCAB/Heat-My-Home-HMHCAB-factsheet.pdf"),
     ]),
   ]),
   CategoryData("Combymat/Foil Heating", [
-    ContentItemPdf(PdfInfo("CBM-150 factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/CBM/Heat-Mat-CBM-Combymat-factsheet.pdf")),
-    ContentItemPdf(PdfInfo("CBM-OVE factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/CBM/Heat-Mat-CBM-Combymat-overlay-boards-factsheet.pdf")),
+    PdfItem(PdfInfo("CBM-150 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/CBM/Heat-Mat-CBM-Combymat-factsheet.pdf")),
+    PdfItem(PdfInfo("CBM-OVE factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/CBM/Heat-Mat-CBM-Combymat-overlay-boards-factsheet.pdf")),
   ]),
   CategoryData("Thermostats", [
-    ContentItemPdf(PdfInfo("HMT5 factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/HMT5/Heat-Mat-HMT5-thermostat-factsheet.pdf")),
-    ContentItemPdf(PdfInfo("HMH200 factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/HMH200/Heat-My-Home-HMH200-Wifi-Thermostat-Factsheet.pdf")),
-    ContentItemPdf(PdfInfo("HMH100 factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/HMH100/Heat-My-Home-HMH100-Wifi-Thermostat-Factsheet.pdf")),
-    ContentItemPdf(PdfInfo("NGTouch factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/NGT/Heat-Mat-NGTouch-thermostat-factsheet.pdf")),
-    ContentItemPdf(PdfInfo("NGTWifi factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/NGTWIFI/Heat-Mat-NGTouch-wifi-thermostat-factsheet.pdf")),
-    ContentItemPdf(PdfInfo("TPS32 factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/TPS/Heat-Mat-TPS31-thermostat-factsheet.pdf")),
+    PdfItem(PdfInfo("HMT5 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/HMT5/Heat-Mat-HMT5-thermostat-factsheet.pdf")),
+    PdfItem(PdfInfo("HMH200 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/HMH200/Heat-My-Home-HMH200-Wifi-Thermostat-Factsheet.pdf")),
+    PdfItem(PdfInfo("HMH100 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/HMH100/Heat-My-Home-HMH100-Wifi-Thermostat-Factsheet.pdf")),
+    PdfItem(PdfInfo("NGTouch factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/NGT/Heat-Mat-NGTouch-thermostat-factsheet.pdf")),
+    PdfItem(PdfInfo("NGTWifi factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/NGTWIFI/Heat-Mat-NGTouch-wifi-thermostat-factsheet.pdf")),
+    PdfItem(PdfInfo("TPS32 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/TPS/Heat-Mat-TPS31-thermostat-factsheet.pdf")),
   ]),
   CategoryData("Insulation Boards", [
-    ContentItemPdf(PdfInfo("TTB Insulation factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/TTB/Heat-Mat-TTB-insulation-board-factsheet.pdf")),
+    PdfItem(PdfInfo("TTB Insulation factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/TTB/Heat-Mat-TTB-insulation-board-factsheet.pdf")),
   ]),
 ];
 
-const List<CategoryData> frostProtectionFactsheets = [
+final List<CategoryData> frostProtectionFactsheetsData = [
   CategoryData("Trace Heating", [
-    ContentItemPdf(PdfInfo("Trace Heating Cable factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/Trace-Heating-Factsheet.pdf")),
+    PdfItem(PdfInfo("Trace Heating Cable factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/Trace-Heating-Factsheet.pdf")),
   ]),
   CategoryData("Pipe Protection", [
-    ContentItemPdf(PdfInfo("PipeGuard factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/PipeGuard_Factsheet.pdf")),
+    PdfItem(PdfInfo("PipeGuard factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/PipeGuard_Factsheet.pdf")),
   ]),
   CategoryData("Gutter & Roof Heating", [
-    ContentItemPdf(PdfInfo("Gutter and Roof Heating Cable factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/Roof-and-gutter-heating-factsheet.pdf")),
+    PdfItem(PdfInfo("Gutter and Roof Heating Cable factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/Roof-and-gutter-heating-factsheet.pdf")),
   ]),
   CategoryData("Driveway & Ramp Heating", [
-    ContentItemPdf(PdfInfo("Driveway Heating Cable factsheet",
-        "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/Heat-Mat-50W-Snow-Melting-Cable-Factsheet.pdf")),
+    PdfItem(PdfInfo("Driveway Heating Cable factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/Heat-Mat-50W-Snow-Melting-Cable-Factsheet.pdf")),
   ]),
 ];
 
-/// =======================
-/// Screen
-/// =======================
+/// -------------------- HELPERS --------------------
+
+Future<File> _downloadToTemp(PdfInfo pdf) async {
+  // Use Firebase Storage for gs://; otherwise treat as direct URL not implemented here
+  final dir = await getTemporaryDirectory();
+  final file = File('${dir.path}/${pdf.name.replaceAll(' ', '_')}.pdf');
+
+  final ref = FirebaseStorage.instance.refFromURL(pdf.url);
+  await ref.writeToFile(file);
+  return file;
+}
+
+Future<void> shareFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
+  try {
+    final f = await _downloadToTemp(pdf);
+    await Share.shareXFiles([XFile(f.path)], text: pdf.name);
+  } catch (e) {
+    toast('Share failed: $e');
+  }
+}
+
+Future<void> downloadFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
+  try {
+    await _downloadToTemp(pdf);
+    toast('Downloaded ${pdf.name}');
+  } catch (e) {
+    toast('Download failed: $e');
+  }
+}
+
+Future<void> downloadAndOpenFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
+  try {
+    final f = await _downloadToTemp(pdf);
+    await OpenFilex.open(f.path);
+  } catch (e) {
+    toast('Open failed: $e');
+  }
+}
+
+/// -------------------- REUSABLE UI --------------------
+
+class Category extends StatelessWidget {
+  final String title;
+  final bool expanded;
+  final VoidCallback onToggle;
+  final Widget Function() content;
+
+  const Category({
+    super.key,
+    required this.title,
+    required this.expanded,
+    required this.onToggle,
+    required this.content,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: onToggle,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF7F7F7),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Icon(expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down),
+                ],
+              ),
+            ),
+          ),
+          if (expanded)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: content(),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class SubCategory extends StatelessWidget {
+  final String title;
+  final Widget Function() content;
+  const SubCategory({super.key, required this.title, required this.content});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: GoogleFonts.raleway(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFFf85c37),
+              )),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: content(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PdfLink extends StatelessWidget {
+  final PdfInfo pdfInfo;
+  final VoidCallback onShare;
+  final VoidCallback onDownload;
+  final VoidCallback onDownloadAndOpen;
+
+  const PdfLink({
+    super.key,
+    required this.pdfInfo,
+    required this.onShare,
+    required this.onDownload,
+    required this.onDownloadAndOpen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = GoogleFonts.raleway(fontSize: 14);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
+          const SizedBox(width: 8),
+          Expanded(child: Text(pdfInfo.name, style: textStyle)),
+          IconButton(
+            icon: const Icon(Icons.ios_share),
+            tooltip: 'Share',
+            onPressed: onShare,
+          ),
+          IconButton(
+            icon: const Icon(Icons.download),
+            tooltip: 'Download',
+            onPressed: onDownload,
+          ),
+          IconButton(
+            icon: const Icon(Icons.open_in_new),
+            tooltip: 'Download & Open',
+            onPressed: onDownloadAndOpen,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// -------------------- FACTSHEETS SCREEN --------------------
 
 class ProductFactsheetsScreen extends StatefulWidget {
   final String categoryTitle;
   final Color appBarColor;
   final List<CategoryData> factsheetData;
-
   const ProductFactsheetsScreen({
     super.key,
     required this.categoryTitle,
@@ -136,89 +281,105 @@ class ProductFactsheetsScreen extends StatefulWidget {
 
 class _ProductFactsheetsScreenState extends State<ProductFactsheetsScreen> {
   String searchQuery = '';
-  final Set<String> expanded = {};
+  Set<String> expanded = {};
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _filterData(widget.factsheetData, searchQuery);
+    final filtered = _filtered(widget.factsheetData, searchQuery);
+
+    if (searchQuery.isNotEmpty) {
+      expanded = filtered.map((e) => e.title).toSet();
+    }
 
     return Scaffold(
       backgroundColor: widget.appBarColor,
       appBar: AppBar(
-        backgroundColor: widget.appBarColor,
-        elevation: 0,
         title: Text(widget.categoryTitle, style: GoogleFonts.raleway(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: const BackButton(color: Colors.white),
         actions: const [
           Padding(
-            padding: EdgeInsets.only(right: 12),
+            padding: EdgeInsets.only(right: 8),
             child: Icon(Icons.description, color: Colors.white),
-          ),
+          )
         ],
       ),
       body: Column(
         children: [
-          // Search on colored area
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _SearchField(
+              hint: 'Search Factsheets (e.g., PKM-160, Thermostats...)',
               value: searchQuery,
-              onChanged: (v) {
-                setState(() {
-                  searchQuery = v;
-                  if (v.isNotEmpty) {
-                    // expand all categories that have matches
-                    expanded
-                      ..clear()
-                      ..addAll(filtered.map((e) => e.title));
-                  }
-                });
-              },
-              onClear: () => setState(() => searchQuery = ''),
+              onChanged: (v) => setState(() => searchQuery = v),
             ),
           ),
-          // White rounded surface with the content
+          const SizedBox(height: 16),
           Expanded(
             child: Container(
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
-              child: filtered.isEmpty && searchQuery.isNotEmpty
-                  ? Center(
-                      child: Text('No results found.', style: GoogleFonts.raleway(color: Colors.grey)),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                      itemCount: filtered.length,
-                      itemBuilder: (_, i) {
-                        final cat = filtered[i];
-                        final isOpen = expanded.contains(cat.title);
-                        return _CategorySection(
-                          title: cat.title,
-                          expanded: isOpen,
-                          onToggle: () {
-                            setState(() {
-                              if (isOpen) {
-                                expanded.remove(cat.title);
-                              } else {
-                                expanded.add(cat.title);
-                              }
-                            });
-                          },
-                          child: Column(
-                            children: cat.items.map((item) {
-                              if (item is ContentItemSubCategory) {
-                                return _SubcategoryBlock(title: item.title, pdfs: item.pdfs);
-                              } else if (item is ContentItemPdf) {
-                                return _PdfRow(info: item.info);
-                              }
-                              return const SizedBox.shrink();
-                            }).toList(),
-                          ),
-                        );
-                      },
-                    ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: filtered.isEmpty && searchQuery.isNotEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 32),
+                          child: Text('No results found.', style: GoogleFonts.raleway(color: Colors.grey)),
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          for (final cat in filtered)
+                            Category(
+                              title: cat.title,
+                              expanded: expanded.contains(cat.title),
+                              onToggle: () {
+                                setState(() {
+                                  if (expanded.contains(cat.title)) {
+                                    expanded.remove(cat.title);
+                                  } else {
+                                    expanded.add(cat.title);
+                                  }
+                                });
+                              },
+                              content: () {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    for (final item in cat.items)
+                                      if (item is SubCategoryItem)
+                                        SubCategory(
+                                          title: item.title,
+                                          content: () => Column(
+                                            children: [
+                                              for (final pdf in item.pdfs)
+                                                PdfLink(
+                                                  pdfInfo: pdf,
+                                                  onShare: () => shareFile(context, pdf, _toast),
+                                                  onDownload: () => downloadFile(context, pdf, _toast),
+                                                  onDownloadAndOpen: () => downloadAndOpenFile(context, pdf, _toast),
+                                                ),
+                                            ],
+                                          ),
+                                        )
+                                      else if (item is PdfItem)
+                                        PdfLink(
+                                          pdfInfo: item.info,
+                                          onShare: () => shareFile(context, item.info, _toast),
+                                          onDownload: () => downloadFile(context, item.info, _toast),
+                                          onDownloadAndOpen: () => downloadAndOpenFile(context, item.info, _toast),
+                                        ),
+                                  ],
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+              ),
             ),
           ),
         ],
@@ -226,50 +387,50 @@ class _ProductFactsheetsScreenState extends State<ProductFactsheetsScreen> {
     );
   }
 
-  List<CategoryData> _filterData(List<CategoryData> data, String query) {
-    if (query.trim().isEmpty) return data;
-    final q = query.toLowerCase();
+  void _toast(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
 
-    return data.map((cat) {
-      final catTitleMatch = cat.title.toLowerCase().contains(q);
+  List<CategoryData> _filtered(List<CategoryData> data, String q) {
+    final query = q.trim().toLowerCase();
+    if (query.isEmpty) return data;
 
-      final filteredItems = <ContentItem>[];
+    final List<CategoryData> out = [];
+    for (final cat in data) {
+      final titleMatch = cat.title.toLowerCase().contains(query);
+      final List<ContentItem> items = [];
+
       for (final item in cat.items) {
-        if (item is ContentItemSubCategory) {
-          final subMatch = item.title.toLowerCase().contains(q);
-          final pdfs = item.pdfs.where((p) => p.name.toLowerCase().contains(q)).toList();
-          if (subMatch || pdfs.isNotEmpty) {
-            filteredItems.add(ContentItemSubCategory(item.title, subMatch ? item.pdfs : pdfs));
+        if (item is SubCategoryItem) {
+          final subMatch = item.title.toLowerCase().contains(query);
+          final matches = item.pdfs.where((p) => p.name.toLowerCase().contains(query)).toList();
+          if (subMatch) {
+            items.add(item);
+          } else if (matches.isNotEmpty) {
+            items.add(SubCategoryItem(item.title, matches));
           }
-        } else if (item is ContentItemPdf) {
-          if (item.info.name.toLowerCase().contains(q)) {
-            filteredItems.add(item);
+        } else if (item is PdfItem) {
+          if (item.info.name.toLowerCase().contains(query)) {
+            items.add(item);
           }
         }
       }
 
-      if (catTitleMatch || filteredItems.isNotEmpty) {
-        return CategoryData(cat.title, catTitleMatch ? cat.items : filteredItems);
+      if (titleMatch) {
+        out.add(cat);
+      } else if (items.isNotEmpty) {
+        out.add(CategoryData(cat.title, items));
       }
-      return null;
-    }).whereType<CategoryData>().toList();
+    }
+    return out;
   }
 }
 
-/// =======================
-/// Widgets
-/// =======================
-
 class _SearchField extends StatelessWidget {
+  final String hint;
   final String value;
   final ValueChanged<String> onChanged;
-  final VoidCallback onClear;
-
-  const _SearchField({
-    required this.value,
-    required this.onChanged,
-    required this.onClear,
-  });
+  const _SearchField({required this.hint, required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -278,183 +439,27 @@ class _SearchField extends StatelessWidget {
         ..selection = TextSelection.collapsed(offset: value.length),
       onChanged: onChanged,
       style: GoogleFonts.raleway(color: Colors.white, fontSize: 16),
-      cursorColor: Colors.white,
       decoration: InputDecoration(
-        hintText: 'Search factsheets (e.g. PKM-160, Thermostats...)',
+        hintText: hint,
         hintStyle: GoogleFonts.raleway(color: Colors.white70),
         prefixIcon: const Icon(Icons.search, color: Colors.white),
         suffixIcon: value.isNotEmpty
             ? IconButton(
                 icon: const Icon(Icons.clear, color: Colors.white),
-                onPressed: onClear,
+                onPressed: () => onChanged(''),
               )
             : null,
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.15),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.white54),
+          borderSide: const BorderSide(color: Colors.white70),
           borderRadius: BorderRadius.circular(12),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: Colors.white),
           borderRadius: BorderRadius.circular(12),
         ),
+        filled: true,
+        fillColor: Colors.transparent,
       ),
-    );
-  }
-}
-
-class _CategorySection extends StatelessWidget {
-  final String title;
-  final bool expanded;
-  final VoidCallback onToggle;
-  final Widget child;
-
-  const _CategorySection({
-    required this.title,
-    required this.expanded,
-    required this.onToggle,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F7F7),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: onToggle,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: GoogleFonts.raleway(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                  Icon(expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down),
-                ],
-              ),
-            ),
-          ),
-          AnimatedCrossFade(
-            firstChild: const SizedBox.shrink(),
-            secondChild: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
-              ),
-              child: child,
-            ),
-            crossFadeState: expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-            duration: const Duration(milliseconds: 200),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SubcategoryBlock extends StatelessWidget {
-  final String title;
-  final List<PdfInfo> pdfs;
-  const _SubcategoryBlock({required this.title, required this.pdfs});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12, top: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style: GoogleFonts.raleway(
-                color: const Color(0xFFf85c37),
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              )),
-          const SizedBox(height: 6),
-          ...pdfs.map((p) => _PdfRow(info: p)).toList(),
-        ],
-      ),
-    );
-  }
-}
-
-class _PdfRow extends StatelessWidget {
-  final PdfInfo info;
-  const _PdfRow({required this.info});
-
-  Future<String> _resolveUrl(String url) async {
-    if (url.startsWith('gs://')) {
-      final ref = FirebaseStorage.instance.refFromURL(url);
-      return await ref.getDownloadURL();
-    }
-    return url;
-  }
-
-  Future<void> _openPdf(BuildContext context) async {
-    try {
-      final httpsUrl = await _resolveUrl(info.url);
-      final uri = Uri.parse(httpsUrl);
-      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      if (!ok) {
-        throw 'Could not launch URL';
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error opening ${info.name}: $e')),
-      );
-    }
-  }
-
-  Future<void> _sharePdf(BuildContext context) async {
-    try {
-      final httpsUrl = await _resolveUrl(info.url);
-      await Share.shareUri(Uri.parse(httpsUrl));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error sharing ${info.name}: $e')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-      title: Text(info.name, style: GoogleFonts.raleway(fontSize: 15)),
-      leading: const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
-      trailing: Wrap(
-        spacing: 8,
-        children: [
-          IconButton(
-            tooltip: 'Open',
-            icon: const Icon(Icons.open_in_new),
-            onPressed: () => _openPdf(context),
-          ),
-          IconButton(
-            tooltip: 'Share',
-            icon: const Icon(Icons.share),
-            onPressed: () => _sharePdf(context),
-          ),
-        ],
-      ),
-      onTap: () => _openPdf(context),
     );
   }
 }
