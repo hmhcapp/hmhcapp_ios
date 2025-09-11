@@ -257,15 +257,23 @@ class _FloorDiagramsScreenState extends State<FloorDiagramsScreen> {
   }
 
   void _openViewer(FloorBuildUp b) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.white.withOpacity(0.6),
-      builder: (_) {
-        return Dialog(
-          backgroundColor: Colors.black,
-          insetPadding: const EdgeInsets.all(8),
+  showDialog(
+    context: context,
+    barrierColor: Colors.white.withOpacity(1), // frosted barrier
+    builder: (_) {
+      return Dialog(
+        backgroundColor: Colors.transparent,      // no black background
+        insetPadding: const EdgeInsets.all(0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
           child: Stack(
             children: [
+              // Frosted white layer inside the dialog
+              Positioned.fill(
+                child: Container(color: Colors.white.withOpacity(1)),
+              ),
+
+              // Zoom/pan viewer
               InteractiveViewer(
                 minScale: 1,
                 maxScale: 5,
@@ -276,20 +284,29 @@ class _FloorDiagramsScreenState extends State<FloorDiagramsScreen> {
                   ),
                 ),
               ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Colors.white),
-                ),
-              ),
+
+              // Back button
+Positioned(
+  top: MediaQuery.of(context).padding.top + 8, // below status bar
+  left: 20,
+  child: Material(
+    color: Colors.black.withOpacity(0.6),
+    shape: const CircleBorder(),
+    clipBehavior: Clip.antiAlias,
+    child: IconButton(
+      tooltip: 'Back',
+      onPressed: () => Navigator.maybePop(context),
+      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+    ),
+  ),
+),
             ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   Future<void> _share(FloorBuildUp b) async {
     await Share.share(
@@ -381,7 +398,7 @@ class _ExpandableCategoryCard extends StatelessWidget {
           ListTile(
             title: Text(
               category.name,
-              style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.bold),
+              style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.w400),
             ),
             trailing: Icon(expanded ? Icons.expand_less : Icons.expand_more),
             onTap: onToggle,
@@ -389,7 +406,7 @@ class _ExpandableCategoryCard extends StatelessWidget {
           if (expanded)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 30, 16, 16),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
@@ -404,7 +421,7 @@ class _ExpandableCategoryCard extends StatelessWidget {
                       onDownload: () => onDownload(category.floorBuildUps[i]),
                     ),
                     if (i < category.floorBuildUps.length - 1)
-                      const Divider(height: 24),
+                      const Divider(height: 30),
                   ],
                 ],
               ),
@@ -433,7 +450,7 @@ class _BuildUpTile extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(buildUp.title, style: GoogleFonts.raleway(fontSize: 16, fontWeight: FontWeight.w600)),
+        Text(buildUp.title, style: GoogleFonts.raleway(fontSize: 16, fontWeight: FontWeight.w400)),
         const SizedBox(height: 8),
         GestureDetector(
           onTap: onOpenImage,

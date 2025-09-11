@@ -418,7 +418,7 @@ class _CaseStudyCard extends StatelessWidget {
                     style: GoogleFonts.raleway(
                       color: Colors.white,
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                   const SizedBox(height: 8),

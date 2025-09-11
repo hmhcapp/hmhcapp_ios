@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../routes.dart';
 
@@ -15,57 +16,60 @@ class InstallerToolsScreen extends StatelessWidget {
     );
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Installer Tools', style: GoogleFonts.raleway()),
+        backgroundColor: const Color(0xFF333333),
+        foregroundColor: Colors.white,
+        systemOverlayStyle: SystemUiOverlayStyle.light, // white status icons
+      ),
       body: Stack(
         children: [
           Positioned.fill(
             child: Image.asset('assets/images/diagonalpatternbg.jpg', fit: BoxFit.cover),
           ),
-          Positioned.fill(child: Container(decoration: BoxDecoration(gradient: gradient))),
-          SafeArea(
-            child: Column(
-              children: [
-                AppBar(
-                  title: Text('Installer Tools', style: GoogleFonts.raleway()),
-                  backgroundColor: const Color(0xFF333333),
-                  foregroundColor: Colors.white,
+          Positioned.fill(
+            child: Container(decoration: BoxDecoration(gradient: gradient)),
+          ),
+
+          // Content (no SafeArea; AppBar already handles top inset)
+          Column(
+            children: [
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  children: [
+                    _BigButton(
+                      text: 'Floor Build-up Diagrams',
+                      color: toolsColor,
+                      icon: Icons.layers,
+                      onTap: () => Navigator.pushNamed(context, Routes.floorDiagrams),
+                    ),
+                    const SizedBox(height: 24),
+                    _BigButton(
+                      text: 'Cable Spacing Calculator',
+                      color: const Color(0xFFEFA528),
+                      icon: Icons.calculate_outlined,
+                      onTap: () => Navigator.pushNamed(context, Routes.cableSpacingCalculator),
+                    ),
+                    const SizedBox(height: 24),
+                    _BigButton(
+                      text: 'Thermostat Apps',
+                      color: const Color(0xFFE26A2D),
+                      icon: Icons.phone_android,
+                      onTap: () => Navigator.pushNamed(context, Routes.thermostatApps),
+                    ),
+                    const SizedBox(height: 24),
+                    _BigButton(
+                      text: 'Installation Checklist',
+                      color: const Color(0xFFD94A2C),
+                      icon: Icons.playlist_add_check_outlined,
+                      onTap: () => Navigator.pushNamed(context, Routes.installationChecklistHub),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Column(
-                    children: [
-                      _BigButton(
-                        text: 'Floor Build-up Diagrams',
-                        color: toolsColor,
-                        icon: Icons.layers,
-                        onTap: () => Navigator.pushNamed(context, Routes.floorDiagrams),
-                      ),
-                      const SizedBox(height: 24),
-                      _BigButton(
-                        text: 'Cable Spacing Calculator',
-                        color: const Color(0xFFEFA528),
-                        icon: Icons.calculate_outlined,
-                        onTap: () => Navigator.pushNamed(context, Routes.cableSpacingCalculator), // placeholder
-                      ),
-                      const SizedBox(height: 24),
-                      _BigButton(
-                        text: 'Thermostat Apps',
-                        color: const Color(0xFFE26A2D),
-                        icon: Icons.phone_android,
-                        onTap: () => Navigator.pushNamed(context, Routes.thermostatApps), // placeholder
-                      ),
-                      const SizedBox(height: 24),
-                      _BigButton(
-                        text: 'Installation Checklist',
-                        color: const Color(0xFFD94A2C),
-                        icon: Icons.playlist_add_check_outlined,
-                        onTap: () => Navigator.pushNamed(context, Routes.installationChecklistHub), // placeholder
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -99,7 +103,10 @@ class _BigButton extends StatelessWidget {
             Icon(icon, size: 56, color: Colors.white.withOpacity(0.9)),
             const SizedBox(width: 20),
             Expanded(
-              child: Text(text, style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.bold)),
+              child: Text(
+                text,
+                style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.w400),
+              ),
             ),
           ],
         ),

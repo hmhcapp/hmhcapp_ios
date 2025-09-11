@@ -167,7 +167,7 @@ class _DetailSection extends StatelessWidget {
           Text(title,
               style: GoogleFonts.raleway(
                 fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w400,
                 color: titleColor,
               )),
           const SizedBox(height: 8),

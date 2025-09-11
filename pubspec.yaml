@@ -10,22 +10,33 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    
 
   cupertino_icons: ^1.0.8
-  firebase_core: ^4.1.0
-  firebase_storage: ^13.0.1
+
+  # ---- Firebase (aligned set) ----
+  firebase_core: ^3.15.2
+  firebase_auth: ^5.7.0
+  cloud_firestore: ^5.6.12
+  firebase_storage: ^12.4.10
+
+  # ---- UI / Utils ----
   google_fonts: ^6.2.1
   url_launcher: ^6.3.1
   share_plus: ^10.0.2
   path_provider: ^2.1.5
   open_filex: ^4.4.0
   qr_flutter: ^4.1.0
-
+  image_picker: ^1.1.2
+  flutter_svg: ^2.0.10+1
+  intl: ^0.19.0
+  http: ^1.2.2
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.6
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
@@ -38,3 +49,29 @@ flutter:
     - assets/images/ngt_wifi.png
     - assets/images/google_play_logo.png
     - assets/images/app_store_badge.png
+    - assets/images/cablespacing.png
+    - assets/images/pkc3spacing.png
+    - assets/images/pkc5spacing.png
+    - assets/images/hmhspacing.png
+    - assets/images/apple_glyph_dark.png
+
+flutter_native_splash:
+  color: "#111111"                         
+  image: assets/images/splash_logo_final_white.png
+  android: true
+  ios: true
+  android_gravity: center
+  ios_content_mode: center
+
+  # Android 12 requires an extra config
+  android_12:
+    image: assets/images/splash_logo_final_white.png
+    icon_background_color: "#111111"
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/images/512_x_512_app_icon.png
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/images/512_x_512_app_icon.png
+

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../routes.dart';
 
@@ -17,6 +18,13 @@ class InstructionCategorySelectionScreen extends StatelessWidget {
     );
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Select Instruction Category', style: GoogleFonts.raleway()),
+        backgroundColor: const Color(0xFF333333),
+        foregroundColor: Colors.white,
+        leading: const BackButton(color: Colors.white),
+        systemOverlayStyle: SystemUiOverlayStyle.light, // white status bar icons
+      ),
       body: Stack(
         children: [
           // Background pattern
@@ -32,44 +40,38 @@ class InstructionCategorySelectionScreen extends StatelessWidget {
               decoration: BoxDecoration(gradient: gradient),
             ),
           ),
-          SafeArea(
-            child: Column(
-              children: [
-                AppBar(
-                  title: Text('Select Instruction Category', style: GoogleFonts.raleway()),
-                  backgroundColor: const Color(0xFF333333),
-                  leading: const BackButton(color: Colors.white),
-                  foregroundColor: Colors.white,
-                ),
-                const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Column(
-                    children: [
-                      _BigButton(
-                        text: 'Underfloor Heating Instructions',
-                        color: const Color(0xFFE26A2D),
-                        icon: Icons.menu_book_outlined,
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          Routes.underfloorHeatingInstructionsRoute, // <-- FIXED
-                        ),
+
+          // Content (no SafeArea; AppBar already handles status bar)
+          Column(
+            children: [
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  children: [
+                    _BigButton(
+                      text: 'Underfloor Heating Instructions',
+                      color: const Color(0xFFE26A2D),
+                      icon: Icons.menu_book_outlined,
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        Routes.underfloorHeatingInstructionsRoute, // <-- FIXED
                       ),
-                      const SizedBox(height: 24),
-                      _BigButton(
-                        text: 'Frost Protection Instructions',
-                        color: const Color(0xFF009ADC),
-                        icon: Icons.ac_unit,
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          Routes.frostProtectionInstructionsRoute, // <-- FIXED
-                        ),
+                    ),
+                    const SizedBox(height: 24),
+                    _BigButton(
+                      text: 'Frost Protection Instructions',
+                      color: const Color(0xFF009ADC),
+                      icon: Icons.ac_unit,
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        Routes.frostProtectionInstructionsRoute, // <-- FIXED
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -110,7 +112,7 @@ class _BigButton extends StatelessWidget {
             Expanded(
               child: Text(
                 text,
-                style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.bold),
+                style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.w300),
               ),
             ),
           ],

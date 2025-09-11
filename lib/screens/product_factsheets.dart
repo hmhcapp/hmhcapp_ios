@@ -163,7 +163,7 @@ class Category extends StatelessWidget {
                   Expanded(
                     child: Text(
                       title,
-                      style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.w400),
                     ),
                   ),
                   Icon(expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down),

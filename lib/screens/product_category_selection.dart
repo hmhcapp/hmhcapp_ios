@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../routes.dart';
 
@@ -17,6 +18,14 @@ class ProductCategorySelectionScreen extends StatelessWidget {
     );
 
     return Scaffold(
+      // AppBar at the very top (status bar remains visible)
+      appBar: AppBar(
+        title: Text('Select Product Category', style: GoogleFonts.raleway()),
+        backgroundColor: const Color(0xFF333333),
+        foregroundColor: Colors.white,
+        systemOverlayStyle: SystemUiOverlayStyle.light, // white status bar icons
+      ),
+
       body: Stack(
         children: [
           // Background pattern
@@ -34,44 +43,37 @@ class ProductCategorySelectionScreen extends StatelessWidget {
             ),
           ),
 
-          SafeArea(
-            child: Column(
-              children: [
-                AppBar(
-                  title: Text('Select Product Category', style: GoogleFonts.raleway()),
-                  backgroundColor: const Color(0xFF333333),
-                  foregroundColor: Colors.white,
-                ),
-                const SizedBox(height: 24),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Column(
-                    children: [
-                      _BigButton(
-                        text: 'Underfloor Heating Products',
-                        color: const Color(0xFFDD4F2E),
-                        icon: Icons.thermostat,
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          Routes.underfloorHeatingFactsheetsRoute, // <-- fixed
-                        ),
+          // Content (no SafeArea, AppBar already handles status bar)
+          Column(
+            children: [
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  children: [
+                    _BigButton(
+                      text: 'Underfloor Heating Products',
+                      color: const Color(0xFFDD4F2E),
+                      icon: Icons.thermostat,
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        Routes.underfloorHeatingFactsheetsRoute,
                       ),
-                      const SizedBox(height: 24),
-                      _BigButton(
-                        text: 'Frost Protection Products',
-                        color: const Color(0xFF009ADC),
-                        icon: Icons.ac_unit,
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          Routes.frostProtectionFactsheetsRoute, // <-- fixed
-                        ),
+                    ),
+                    const SizedBox(height: 24),
+                    _BigButton(
+                      text: 'Frost Protection Products',
+                      color: const Color(0xFF009ADC),
+                      icon: Icons.ac_unit,
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        Routes.frostProtectionFactsheetsRoute,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -100,7 +102,7 @@ class _BigButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: color, // keep solid colour
+          backgroundColor: color,
           foregroundColor: Colors.white,
           elevation: 4,
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -115,7 +117,7 @@ class _BigButton extends StatelessWidget {
                 text,
                 style: GoogleFonts.raleway(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w300,
                 ),
               ),
             ),
