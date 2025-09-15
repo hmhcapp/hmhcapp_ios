@@ -1,7 +1,6 @@
 // lib/screens/quote_form.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -49,118 +48,66 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   bool submitting = false;
   String? warn;
 
-  // ---- Date formatting & pickers ----
   final _dateFmt = DateFormat('dd/MM/yyyy');
 
+  // =================== THIS FUNCTION HAS BEEN CORRECTED ===================
   Future<void> _pickDate() async {
     final now = DateTime.now();
-    final first = DateTime(now.year, now.month, now.day);
-    final last = now.add(const Duration(days: 365));
+    final firstDate = DateTime(now.year, now.month, now.day);
+    final lastDate = now.add(const Duration(days: 365));
 
-    if (Platform.isIOS) {
-      DateTime temp = itemsNeededDate.isNotEmpty
-          ? _dateFmt.parse(itemsNeededDate)
-          : first;
+    DateTime initialDate = firstDate;
+    if (itemsNeededDate.isNotEmpty) {
+      try {
+        final parsedDate = _dateFmt.parse(itemsNeededDate);
+        if (parsedDate.isAfter(firstDate) && parsedDate.isBefore(lastDate)) {
+          initialDate = parsedDate;
+        }
+      } catch (_) {}
+    }
 
-      await showCupertinoModalPopup(
-        context: context,
-        builder: (_) {
-          return Container(
-            height: 320,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 12)],
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      builder: (context, child) {
+        // This new theme starts from a clean dark slate to override Material You.
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            // The color scheme is the most important part for Material 3.
+            colorScheme: ColorScheme.dark(
+              // Main accent color for header and selected day
+              primary: widget.appBarColor,
+              // Text color on top of the accent color (e.g., '15' in the circle)
+              onPrimary: ThemeData.estimateBrightnessForColor(widget.appBarColor) == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+              // THIS IS THE KEY: The main background color of the dialog.
+              surface: const Color(0xFF3a3a3a),
+              // Text color for unselected days, month, year.
+              onSurface: Colors.white70,
             ),
-            child: Column(
-              children: [
-                // Handle line and actions
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          height: 4,
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.black12,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: () => Navigator.pop(context),
-                        child: Text('Cancel', style: GoogleFonts.raleway(color: Colors.black54)),
-                      ),
-                      Text('Select Date', style: GoogleFonts.raleway(fontWeight: FontWeight.w600)),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: () {
-                          setState(() => itemsNeededDate = _dateFmt.format(temp));
-                          Navigator.pop(context);
-                        },
-                        child: Text(
-                          'Done',
-                          style: GoogleFonts.raleway(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1),
-                Expanded(
-                  child: CupertinoDatePicker(
-                    mode: CupertinoDatePickerMode.date,
-                    minimumDate: first,
-                    maximumDate: last,
-                    initialDateTime: temp.isBefore(first)
-                        ? first
-                        : (temp.isAfter(last) ? last : temp),
-                    onDateTimeChanged: (d) => temp = d,
-                  ),
-                ),
-              ],
+            // Style the "OK" and "CANCEL" buttons.
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: widget.appBarColor, // Button text color
+              ),
             ),
-          );
-        },
-      );
-    } else {
-      final picked = await showDatePicker(
-        context: context,
-        initialDate: first,
-        firstDate: first,
-        lastDate: last,
-        builder: (context, child) {
-          return Theme(
-            data: Theme.of(context).copyWith(
-              colorScheme: Theme.of(context).colorScheme.copyWith(
-                    primary: Theme.of(context).colorScheme.primary,
-                  ),
-            ),
-            child: child!,
-          );
-        },
-      );
-      if (picked != null) {
-        setState(() => itemsNeededDate = _dateFmt.format(picked));
-      }
+            // Also set the old dialog background color property for robustness.
+            dialogBackgroundColor: const Color(0xFF3a3a3a),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() => itemsNeededDate = _dateFmt.format(picked));
     }
   }
+  // =======================================================================
+
 
   Future<void> _pickGallery() async {
     final x = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
@@ -204,12 +151,11 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       projectStage: projectStage,
       itemsNeededDate: itemsNeededDate,
       additionalInfo: additionalInfo,
-      imageUrl: null, // storage path will be set by service if imageFile present
+      imageUrl: null,
       timestamp: DateTime.now().millisecondsSinceEpoch,
       userId: uid,
     );
 
-    // Convert XFile -> File if present
     File? imageFile;
     if (pickedImage != null) {
       imageFile = File(pickedImage!.path);
@@ -232,7 +178,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
         ),
       );
 
-      // Also navigate to Saved tab
       Navigator.popUntil(context, (r) => r.settings.name == Routes.getAQuoteCategorySelection || r.isFirst);
       Navigator.pushNamed(context, Routes.getAQuoteCategorySelection, arguments: 1);
     } catch (e) {
@@ -285,7 +230,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
-
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: widget.appBarColor),
@@ -296,18 +240,15 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   icon: const Icon(Icons.phone),
                   label: Text('Call us on 01444 247020', style: GoogleFonts.raleway(fontWeight: FontWeight.bold)),
                 ),
-
                 const SizedBox(height: 24),
                 _sectionTitle('Submit Your Plans'),
                 Text('For the most accurate quote, please provide your plans.', style: GoogleFonts.raleway(fontSize: 14, color: Colors.grey)),
-
                 const SizedBox(height: 8),
                 Row(children: [
                   Expanded(child: _uploadBtn('Take Photo', Icons.photo_camera, _pickCamera)),
                   const SizedBox(width: 16),
                   Expanded(child: _uploadBtn('Upload Plan', Icons.image, _pickGallery)),
                 ]),
-
                 if (pickedImage != null) ...[
                   const SizedBox(height: 12),
                   ClipRRect(
@@ -320,7 +261,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                     ),
                   ),
                 ],
-
                 const SizedBox(height: 24),
                 _sectionTitle('Your Details'),
                 _tf('Your Heat Mat distributor/wholesaler', (v) => distributor = v, textStyle),
@@ -329,13 +269,10 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                 _tf('Email address*', (v) => email = v, textStyle, keyboard: TextInputType.emailAddress),
                 _tf('Phone number', (v) => telephone = v, textStyle, keyboard: TextInputType.phone),
                 _tf('Postcode', (v) => postcode = v, textStyle),
-
                 const SizedBox(height: 16),
                 _sectionTitle('Project Details'),
                 _tf('Project Name (if applicable)', (v) => projectName = v, textStyle),
                 _dropdown('What stage is the project at?', projectStages, projectStage, (v) => setState(() => projectStage = v)),
-
-                // --- Fancy date field ---
                 const SizedBox(height: 8),
                 GestureDetector(
                   onTap: _pickDate,
@@ -354,7 +291,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 16),
                 _sectionTitle('Additional Information'),
                 Text(
@@ -363,7 +299,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                 ),
                 const SizedBox(height: 8),
                 _multiline('Please supply any further information...', (v) => additionalInfo = v, textStyle),
-
                 const SizedBox(height: 24),
                 SizedBox(
                   height: 50,
@@ -380,7 +315,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
               ],
             ),
           ),
-
           if (warn != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 24.0),
