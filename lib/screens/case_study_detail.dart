@@ -1,5 +1,8 @@
+// UPDATED case_study_detail.dart
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'case_studies.dart';
 import 'product_factsheets.dart' show PdfInfo, shareFile, downloadFile, downloadAndOpenFile;
@@ -10,6 +13,13 @@ class CaseStudyDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void showToast(String msg) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+    }
+
     final study = allCaseStudies.firstWhere(
       (e) => e.id == caseStudyId,
       orElse: () => const CaseStudy(
@@ -45,15 +55,15 @@ class CaseStudyDetailScreen extends StatelessWidget {
             onPressed: () => shareFile(
               context,
               PdfInfo(study.title, study.pdfPath),
-              _toast,
+              showToast,
             ),
           ),
           IconButton(
             icon: const Icon(Icons.download),
-            onPressed: () => downloadFile(
+            onPressed: () => downloadAndOpenFile(
               context,
               PdfInfo(study.title, study.pdfPath),
-              _toast,
+              showToast,
             ),
           ),
         ],
@@ -66,18 +76,65 @@ class CaseStudyDetailScreen extends StatelessWidget {
               child: Image.network(
                 study.imageUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: Colors.black12,
-                  alignment: Alignment.center,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      fit: BoxFit.contain,
-                      color: Colors.black26,
-                    ),
-                  ),
-                ),
+                // =================== THIS IS THE UPDATED PART ===================
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  // Use a Stack to layer the logo and the shimmer
+                  return Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Container(
+                        color: Colors.black12,
+                        alignment: Alignment.center,
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            fit: BoxFit.contain,
+                            color: Colors.black26,
+                          ),
+                        ),
+                      ),
+                      Opacity(
+                        opacity: 0.9,
+                        child: Shimmer.fromColors(
+                          baseColor: Colors.grey.shade300,
+                          highlightColor: Colors.grey.shade100,
+                          child: Container(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  // The error builder uses the same Stack for a consistent look
+                  return Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Container(
+                        color: Colors.black12,
+                        alignment: Alignment.center,
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            fit: BoxFit.contain,
+                            color: Colors.black26,
+                          ),
+                        ),
+                      ),
+                      Opacity(
+                        opacity: 0.9,
+                        child: Shimmer.fromColors(
+                          baseColor: Colors.grey.shade300,
+                          highlightColor: Colors.grey.shade100,
+                          child: Container(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+                // ================================================================
               ),
             ),
           Padding(
@@ -113,7 +170,7 @@ class CaseStudyDetailScreen extends StatelessWidget {
                         onPressed: () => shareFile(
                           context,
                           PdfInfo(study.title, study.pdfPath),
-                          _toast,
+                          showToast,
                         ),
                         icon: const Icon(Icons.share),
                         label: Text('Share', style: GoogleFonts.raleway()),
@@ -122,10 +179,10 @@ class CaseStudyDetailScreen extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => downloadFile(
+                        onPressed: () => downloadAndOpenFile(
                           context,
                           PdfInfo(study.title, study.pdfPath),
-                          _toast,
+                          showToast,
                         ),
                         icon: const Icon(Icons.download),
                         label: Text('Save PDF', style: GoogleFonts.raleway()),
@@ -139,10 +196,6 @@ class CaseStudyDetailScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  void _toast(String msg) {
-    // handled inside shareFile/downloadFile via ScaffoldMessenger
   }
 }
 

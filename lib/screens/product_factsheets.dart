@@ -1,10 +1,14 @@
+// product_factsheets.dart
+
 import 'dart:io';
+import 'dart:typed_data'; // <-- ADD THIS IMPORT
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:file_saver/file_saver.dart'; // <-- ADD THIS IMPORT
 
 /// -------------------- MODELS --------------------
 
@@ -34,7 +38,7 @@ class CategoryData {
 }
 
 /// -------------------- FACTSHEETS DATA --------------------
-
+// ... (All your existing data remains unchanged)
 final List<CategoryData> underfloorHeatingFactsheetsData = [
   CategoryData("Heating Mats", [
     SubCategoryItem("Heat Mat Pro", [
@@ -88,10 +92,11 @@ final List<CategoryData> frostProtectionFactsheetsData = [
   ]),
 ];
 
+
 /// -------------------- HELPERS --------------------
 
+// This helper is still used by shareFile and downloadAndOpenFile, so we keep it.
 Future<File> _downloadToTemp(PdfInfo pdf) async {
-  // Use Firebase Storage for gs://; otherwise treat as direct URL not implemented here
   final dir = await getTemporaryDirectory();
   final file = File('${dir.path}/${pdf.name.replaceAll(' ', '_')}.pdf');
 
@@ -102,6 +107,7 @@ Future<File> _downloadToTemp(PdfInfo pdf) async {
 
 Future<void> shareFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
   try {
+    toast('Preparing to share...');
     final f = await _downloadToTemp(pdf);
     await Share.shareXFiles([XFile(f.path)], text: pdf.name);
   } catch (e) {
@@ -109,17 +115,42 @@ Future<void> shareFile(BuildContext context, PdfInfo pdf, void Function(String) 
   }
 }
 
+// =================== THIS IS THE CORRECTED FUNCTION ===================
+/// Saves the file to a user-visible location like 'Downloads'.
 Future<void> downloadFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
   try {
-    await _downloadToTemp(pdf);
-    toast('Downloaded ${pdf.name}');
+    toast('Starting download...');
+    final ref = FirebaseStorage.instance.refFromURL(pdf.url);
+
+    // Get the file data as bytes
+    final Uint8List? bytes = await ref.getData();
+
+    if (bytes == null) {
+      throw Exception("Could not download file data.");
+    }
+
+    // Use file_saver to open the "Save As" dialog
+    final sanitizedFileName = pdf.name.replaceAll(RegExp(r'[^\w\s]+'), '').replaceAll(' ', '_');
+    await FileSaver.instance.saveFile(
+      name: sanitizedFileName,
+      bytes: bytes,
+      ext: 'pdf',
+      mimeType: MimeType.pdf,
+    );
+    
+    // The toast is now more of a confirmation, as the user has actively saved the file.
+    toast('File save dialog has been opened.');
+
   } catch (e) {
-    toast('Download failed: $e');
+    toast('Save failed: $e');
   }
 }
+// =======================================================================
+
 
 Future<void> downloadAndOpenFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
   try {
+    toast('Downloading to open...');
     final f = await _downloadToTemp(pdf);
     await OpenFilex.open(f.path);
   } catch (e) {
@@ -128,7 +159,7 @@ Future<void> downloadAndOpenFile(BuildContext context, PdfInfo pdf, void Functio
 }
 
 /// -------------------- REUSABLE UI --------------------
-
+// ... (All your existing UI widgets remain unchanged)
 class Category extends StatelessWidget {
   final String title;
   final bool expanded;
@@ -220,14 +251,12 @@ class SubCategory extends StatelessWidget {
 class PdfLink extends StatelessWidget {
   final PdfInfo pdfInfo;
   final VoidCallback onShare;
-  final VoidCallback onDownload;
   final VoidCallback onDownloadAndOpen;
 
   const PdfLink({
     super.key,
     required this.pdfInfo,
     required this.onShare,
-    required this.onDownload,
     required this.onDownloadAndOpen,
   });
 
@@ -240,20 +269,22 @@ class PdfLink extends StatelessWidget {
         children: [
           const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
           const SizedBox(width: 8),
-          Expanded(child: Text(pdfInfo.name, style: textStyle)),
+          // Name taps = Download & Open
+          Expanded(
+            child: InkWell(
+              onTap: onDownloadAndOpen,
+              child: Text(pdfInfo.name, style: textStyle),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.ios_share),
             tooltip: 'Share',
             onPressed: onShare,
           ),
+          // Use standard download icon for "Download & Open"
           IconButton(
-            icon: const Icon(Icons.download),
+            icon: const Icon(Icons.download), // <- updated icon
             tooltip: 'Download',
-            onPressed: onDownload,
-          ),
-          IconButton(
-            icon: const Icon(Icons.open_in_new),
-            tooltip: 'Download & Open',
             onPressed: onDownloadAndOpen,
           ),
         ],
@@ -360,7 +391,6 @@ class _ProductFactsheetsScreenState extends State<ProductFactsheetsScreen> {
                                                 PdfLink(
                                                   pdfInfo: pdf,
                                                   onShare: () => shareFile(context, pdf, _toast),
-                                                  onDownload: () => downloadFile(context, pdf, _toast),
                                                   onDownloadAndOpen: () => downloadAndOpenFile(context, pdf, _toast),
                                                 ),
                                             ],
@@ -370,7 +400,6 @@ class _ProductFactsheetsScreenState extends State<ProductFactsheetsScreen> {
                                         PdfLink(
                                           pdfInfo: item.info,
                                           onShare: () => shareFile(context, item.info, _toast),
-                                          onDownload: () => downloadFile(context, item.info, _toast),
                                           onDownloadAndOpen: () => downloadAndOpenFile(context, item.info, _toast),
                                         ),
                                   ],
@@ -388,6 +417,7 @@ class _ProductFactsheetsScreenState extends State<ProductFactsheetsScreen> {
   }
 
   void _toast(String msg) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Hide previous toasts
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 

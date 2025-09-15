@@ -11,7 +11,6 @@ import '../routes.dart';
 const _orange = Color(0xFFDD4F2E);
 const _dark = Color(0xFF333333);
 const _greyBtn = Color(0xFF555555);
-const _warnRed = Color(0xFFC00000);
 const _warrantyYellow = Color(0xFFF1B227);
 const _quotesOrange = Color(0xFFEFA528);
 
@@ -68,7 +67,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _phoneCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
 
-  bool _showDeleteDialog = false;
   bool _saving = false;
 
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _sub;
@@ -84,7 +82,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // If not logged in or anonymous, route to login (Profile is for logged-in users only now).
     if (user == null || user.isAnonymous) {
-      // Defer until after first frame to avoid Navigator during build.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         Navigator.of(context).pushNamedAndRemoveUntil(Routes.login, (r) => false);
@@ -189,28 +186,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to send reset email: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _deleteAccount() async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-    try {
-      await _db.collection('users').doc(user.uid).delete().catchError((_) {});
-      await user.delete();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account deleted')),
-        );
-      }
-      if (!mounted) return;
-      Navigator.of(context).pushNamedAndRemoveUntil(Routes.login, (r) => false);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete account: $e')),
         );
       }
     }
@@ -503,20 +478,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.w600)),
           ),
         ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 50,
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () => setState(() => _showDeleteDialog = true),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: _warnRed),
-              foregroundColor: _warnRed,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: Text('Delete My Account', style: GoogleFonts.raleway(fontWeight: FontWeight.bold)),
-          ),
-        ),
 
         const SizedBox(height: 32),
 
@@ -553,8 +514,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         const SizedBox(height: 16),
-
-        if (_showDeleteDialog) _deleteDialog(),
       ],
     );
   }
@@ -572,30 +531,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const Divider(color: Color(0xFFDDDDDD), height: 16),
         ],
       ),
-    );
-  }
-
-  Widget _deleteDialog() {
-    return AlertDialog(
-      title: Text('Delete Account', style: GoogleFonts.raleway(fontWeight: FontWeight.bold)),
-      content: Text(
-        'Are you sure you want to delete your account and all associated data? This action is irreversible.',
-        style: GoogleFonts.raleway(),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => setState(() => _showDeleteDialog = false),
-          child: Text('Cancel', style: GoogleFonts.raleway(color: _dark)),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            setState(() => _showDeleteDialog = false);
-            await _deleteAccount();
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: _warnRed),
-          child: Text('Delete', style: GoogleFonts.raleway(color: Colors.white)),
-        ),
-      ],
     );
   }
 }

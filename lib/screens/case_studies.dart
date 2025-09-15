@@ -1,9 +1,13 @@
+// UPDATED case_studies.dart
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
 
-import 'product_factsheets.dart' show PdfInfo; // reuse PdfInfo model from factsheets
+import 'product_factsheets.dart' show PdfInfo;
 import '../routes.dart';
 
+// ... (Your CaseStudy class and allCaseStudies list remain unchanged)
 class CaseStudy {
   final String id;
   final String title;
@@ -28,7 +32,6 @@ class CaseStudy {
   });
 }
 
-// ---- Full dataset (20 items) ----
 const List<CaseStudy> allCaseStudies = [
   CaseStudy(
     id: "1",
@@ -373,38 +376,19 @@ class _CaseStudyCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image with simple placeholder
             AspectRatio(
               aspectRatio: 16 / 9,
               child: Image.network(
                 study.imageUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: Colors.black12,
-                  alignment: Alignment.center,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      fit: BoxFit.contain,
-                      color: Colors.black26,
-                    ),
-                  ),
-                ),
-                loadingBuilder: (ctx, child, progress) {
+                // The loadingBuilder and errorBuilder now use the updated
+                // _ShimmerPlaceholder, so no changes are needed here.
+                loadingBuilder: (context, child, progress) {
                   if (progress == null) return child;
-                  return Container(
-                    color: Colors.black12,
-                    alignment: Alignment.center,
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        fit: BoxFit.contain,
-                        color: Colors.black26,
-                      ),
-                    ),
-                  );
+                  return const _ShimmerPlaceholder();
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return const _ShimmerPlaceholder();
                 },
               ),
             ),
@@ -437,3 +421,43 @@ class _CaseStudyCard extends StatelessWidget {
     );
   }
 }
+
+// =================== THIS WIDGET HAS BEEN UPDATED ===================
+class _ShimmerPlaceholder extends StatelessWidget {
+  const _ShimmerPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    // A Stack lets us layer widgets.
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Layer 1: The background logo.
+        Container(
+          color: Colors.black12, // Same color as your original error builder
+          alignment: Alignment.center,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Image.asset(
+              'assets/images/logo.png',
+              fit: BoxFit.contain,
+              color: Colors.black26, // A faded, subtle color for the logo
+            ),
+          ),
+        ),
+        // Layer 2: The semi-transparent shimmer effect on top.
+        Opacity(
+          opacity: 0.7, // 70% opacity, so the logo behind is visible
+          child: Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              color: Colors.white, // This is what the shimmer effect draws on
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+// ================================================================

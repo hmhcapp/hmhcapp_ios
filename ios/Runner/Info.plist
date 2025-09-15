@@ -47,5 +47,12 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+
+                <key>NSCameraUsageDescription</key>
+                <string>This app needs access to your camera to take a photo of your plans for the quote.</string>
+                <key>NSPhotoLibraryUsageDescription</key>
+                <string>This app needs access to your photo library to upload an existing plan for the quote.</string>
+                <key>NSMicrophoneUsageDescription</key>
+                <string>This app needs access to your microphone if you wish to record a video of your plans.</string>
 	</dict>
 </plist>
