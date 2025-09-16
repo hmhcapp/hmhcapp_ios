@@ -30,18 +30,21 @@ class QuoteFormScreen extends StatefulWidget {
 class _QuoteFormScreenState extends State<QuoteFormScreen> {
   final _picker = ImagePicker();
 
+  //==[CORRECTION START] Use TextEditingControllers for each TextField ==
+  late final TextEditingController _distributorController;
+  late final TextEditingController _nameController;
+  late final TextEditingController _companyController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _telephoneController;
+  late final TextEditingController _postcodeController;
+  late final TextEditingController _projectNameController;
+  late final TextEditingController _itemsNeededDateController;
+  late final TextEditingController _additionalInfoController;
+  //==[CORRECTION END]====================================================
+
   // Fields
-  String distributor = '';
-  String name = '';
-  String company = '';
-  String email = '';
-  String telephone = '';
-  String postcode = '';
-  String projectName = '';
   String projectStage = 'Planning & Design';
   final projectStages = const ['Planning & Design', 'Ready to Order', 'In Construction'];
-  String itemsNeededDate = '';
-  String additionalInfo = '';
 
   XFile? pickedImage;
 
@@ -50,16 +53,46 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
 
   final _dateFmt = DateFormat('dd/MM/yyyy');
 
-  // =================== THIS FUNCTION HAS BEEN CORRECTED ===================
+  //==[CORRECTION START] Initialize controllers in initState and dispose them ==
+  @override
+  void initState() {
+    super.initState();
+    _distributorController = TextEditingController();
+    _nameController = TextEditingController();
+    _companyController = TextEditingController();
+    _emailController = TextEditingController();
+    _telephoneController = TextEditingController();
+    _postcodeController = TextEditingController();
+    _projectNameController = TextEditingController();
+    _itemsNeededDateController = TextEditingController();
+    _additionalInfoController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _distributorController.dispose();
+    _nameController.dispose();
+    _companyController.dispose();
+    _emailController.dispose();
+    _telephoneController.dispose();
+    _postcodeController.dispose();
+    _projectNameController.dispose();
+    _itemsNeededDateController.dispose();
+    _additionalInfoController.dispose();
+    super.dispose();
+  }
+  //==[CORRECTION END]====================================================
+
+
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final firstDate = DateTime(now.year, now.month, now.day);
     final lastDate = now.add(const Duration(days: 365));
 
     DateTime initialDate = firstDate;
-    if (itemsNeededDate.isNotEmpty) {
+    if (_itemsNeededDateController.text.isNotEmpty) {
       try {
-        final parsedDate = _dateFmt.parse(itemsNeededDate);
+        final parsedDate = _dateFmt.parse(_itemsNeededDateController.text);
         if (parsedDate.isAfter(firstDate) && parsedDate.isBefore(lastDate)) {
           initialDate = parsedDate;
         }
@@ -72,29 +105,21 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       firstDate: firstDate,
       lastDate: lastDate,
       builder: (context, child) {
-        // This new theme starts from a clean dark slate to override Material You.
         return Theme(
           data: ThemeData.dark().copyWith(
-            // The color scheme is the most important part for Material 3.
             colorScheme: ColorScheme.dark(
-              // Main accent color for header and selected day
               primary: widget.appBarColor,
-              // Text color on top of the accent color (e.g., '15' in the circle)
               onPrimary: ThemeData.estimateBrightnessForColor(widget.appBarColor) == Brightness.dark
                   ? Colors.white
                   : Colors.black,
-              // THIS IS THE KEY: The main background color of the dialog.
               surface: const Color(0xFF3a3a3a),
-              // Text color for unselected days, month, year.
               onSurface: Colors.white70,
             ),
-            // Style the "OK" and "CANCEL" buttons.
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: widget.appBarColor, // Button text color
+                foregroundColor: widget.appBarColor,
               ),
             ),
-            // Also set the old dialog background color property for robustness.
             dialogBackgroundColor: const Color(0xFF3a3a3a),
           ),
           child: child!,
@@ -103,10 +128,10 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     );
 
     if (picked != null) {
-      setState(() => itemsNeededDate = _dateFmt.format(picked));
+      //==[CORRECTION] Update the controller's text
+      setState(() => _itemsNeededDateController.text = _dateFmt.format(picked));
     }
   }
-  // =======================================================================
 
 
   Future<void> _pickGallery() async {
@@ -129,7 +154,11 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   }
 
   Future<void> _submit() async {
-    if (name.trim().isEmpty || email.trim().isEmpty) {
+    //==[CORRECTION] Get values from controllers
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+
+    if (name.isEmpty || email.isEmpty) {
       _showWarn('Please enter your name and email.');
       return;
     }
@@ -141,20 +170,21 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     final quote = Quote(
       id: id,
       categoryTitle: widget.categoryTitle,
-      distributor: distributor,
+      distributor: _distributorController.text,
       name: name,
-      company: company,
+      company: _companyController.text,
       email: email,
-      telephone: telephone,
-      postcode: postcode,
-      projectName: projectName,
+      telephone: _telephoneController.text,
+      postcode: _postcodeController.text,
+      projectName: _projectNameController.text,
       projectStage: projectStage,
-      itemsNeededDate: itemsNeededDate,
-      additionalInfo: additionalInfo,
+      itemsNeededDate: _itemsNeededDateController.text,
+      additionalInfo: _additionalInfoController.text,
       imageUrl: null,
       timestamp: DateTime.now().millisecondsSinceEpoch,
       userId: uid,
     );
+    //==[CORRECTION END]====================================================
 
     File? imageFile;
     if (pickedImage != null) {
@@ -263,23 +293,26 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                 ],
                 const SizedBox(height: 24),
                 _sectionTitle('Your Details'),
-                _tf('Your Heat Mat distributor/wholesaler', (v) => distributor = v, textStyle),
-                _tf('Name*', (v) => name = v, textStyle),
-                _tf('Your company name', (v) => company = v, textStyle),
-                _tf('Email address*', (v) => email = v, textStyle, keyboard: TextInputType.emailAddress),
-                _tf('Phone number', (v) => telephone = v, textStyle, keyboard: TextInputType.phone),
-                _tf('Postcode', (v) => postcode = v, textStyle),
+                //==[CORRECTION] Pass controllers to the widget methods
+                _tf('Your Heat Mat distributor/wholesaler', _distributorController, textStyle),
+                _tf('Name*', _nameController, textStyle),
+                _tf('Your company name', _companyController, textStyle),
+                _tf('Email address*', _emailController, textStyle, keyboard: TextInputType.emailAddress),
+                _tf('Phone number', _telephoneController, textStyle, keyboard: TextInputType.phone),
+                _tf('Postcode', _postcodeController, textStyle),
                 const SizedBox(height: 16),
                 _sectionTitle('Project Details'),
-                _tf('Project Name (if applicable)', (v) => projectName = v, textStyle),
+                _tf('Project Name (if applicable)', _projectNameController, textStyle),
+                //==[CORRECTION END]====================================================
                 _dropdown('What stage is the project at?', projectStages, projectStage, (v) => setState(() => projectStage = v)),
                 const SizedBox(height: 8),
                 GestureDetector(
                   onTap: _pickDate,
                   child: AbsorbPointer(
                     child: TextField(
-                      controller: TextEditingController(text: itemsNeededDate)
-                        ..selection = TextSelection.collapsed(offset: itemsNeededDate.length),
+                      //==[CORRECTION] Use the dedicated date controller
+                      controller: _itemsNeededDateController,
+                      //==[CORRECTION END]================================
                       readOnly: true,
                       style: GoogleFonts.raleway(fontSize: 16, color: Colors.black),
                       decoration: InputDecoration(
@@ -298,7 +331,9 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   style: GoogleFonts.raleway(fontSize: 13, color: Colors.grey),
                 ),
                 const SizedBox(height: 8),
-                _multiline('Please supply any further information...', (v) => additionalInfo = v, textStyle),
+                //==[CORRECTION] Pass controller to the multiline widget method
+                _multiline('Please supply any further information...', _additionalInfoController, textStyle),
+                //==[CORRECTION END]====================================================
                 const SizedBox(height: 24),
                 SizedBox(
                   height: 50,
@@ -358,11 +393,13 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
         child: Text(s, style: GoogleFonts.raleway(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black)),
       );
 
-  Widget _tf(String label, ValueChanged<String> onChanged, TextStyle style, {TextInputType? keyboard}) {
+  //==[CORRECTION START] Modify _tf and _multiline to accept controllers ==
+  Widget _tf(String label, TextEditingController controller, TextStyle style, {TextInputType? keyboard}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: TextField(
-        onChanged: onChanged,
+        controller: controller, // Use the controller
+        // onChanged is no longer needed here
         keyboardType: keyboard,
         style: style,
         decoration: InputDecoration(
@@ -374,9 +411,10 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     );
   }
 
-  Widget _multiline(String label, ValueChanged<String> onChanged, TextStyle style) {
+  Widget _multiline(String label, TextEditingController controller, TextStyle style) {
     return TextField(
-      onChanged: onChanged,
+      controller: controller, // Use the controller
+      // onChanged is no longer needed here
       maxLines: 5,
       style: style,
       decoration: InputDecoration(
@@ -386,6 +424,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       ),
     );
   }
+  //==[CORRECTION END]====================================================
+
 
   Widget _dropdown(String label, List<String> options, String selected, ValueChanged<String> onSelected) {
     return Padding(
