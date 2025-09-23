@@ -1,9 +1,41 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../routes.dart';
 
+// Data class for the button information
+class _ChecklistInfo {
+  final String text;
+  final Color color;
+  final IconData icon;
+  final String route;
+
+  const _ChecklistInfo({
+    required this.text,
+    required this.color,
+    required this.icon,
+    required this.route,
+  });
+}
+
 class InstallationChecklistHubScreen extends StatelessWidget {
   const InstallationChecklistHubScreen({super.key});
+
+  // Store button data in a list
+  static const _checklists = <_ChecklistInfo>[
+    _ChecklistInfo(
+      text: 'Heating Mats',
+      color: Color(0xFFF4BE25),
+      icon: Icons.space_dashboard,
+      route: Routes.heatingMatChecklist,
+    ),
+    _ChecklistInfo(
+      text: 'Heating Cables',
+      color: Color(0xFFEFA528),
+      icon: Icons.route,
+      route: Routes.heatingCableChecklist,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +49,6 @@ class InstallationChecklistHubScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      // ✅ AppBar now in Scaffold so the black bar goes to the very top
       appBar: AppBar(
         title: Text(
           'Installation Checklist',
@@ -26,7 +57,6 @@ class InstallationChecklistHubScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF333333),
         leading: const BackButton(color: Colors.white),
       ),
-
       body: Stack(
         children: [
           Positioned.fill(
@@ -38,34 +68,26 @@ class InstallationChecklistHubScreen extends StatelessWidget {
           Positioned.fill(
             child: Container(decoration: BoxDecoration(gradient: gradient)),
           ),
-
-          // Content below the app bar
           SafeArea(
-            top: false, // App bar already handles the top area
-            child: Column(
-              children: [
-                const SizedBox(height: 32),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Column(
-                    children: [
-                      _BigButton(
-                        text: 'Heating Mats',
-                        color: const Color(0xFFF4BE25),
-                        icon: Icons.space_dashboard,
-                        onTap: () => Navigator.pushNamed(context, Routes.heatingMatChecklist),
-                      ),
-                      const SizedBox(height: 24),
-                      _BigButton(
-                        text: 'Heating Cables',
-                        color: const Color(0xFFEFA528),
-                        icon: Icons.route,
-                        onTap: () => Navigator.pushNamed(context, Routes.heatingCableChecklist),
-                      ),
-                    ],
+            top: false,
+            // Use a ListView for consistency and easy indexing
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+              itemCount: _checklists.length,
+              itemBuilder: (context, index) {
+                final checklist = _checklists[index];
+                return Padding(
+                  // Add spacing below each button except the last one
+                  padding: EdgeInsets.only(bottom: index == _checklists.length - 1 ? 0 : 24),
+                  child: _BigButton(
+                    text: checklist.text,
+                    color: checklist.color,
+                    icon: checklist.icon,
+                    onTap: () => Navigator.pushNamed(context, checklist.route),
+                    index: index, // Pass the index for the animation
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
         ],
@@ -74,45 +96,79 @@ class InstallationChecklistHubScreen extends StatelessWidget {
   }
 }
 
-class _BigButton extends StatelessWidget {
+class _BigButton extends StatefulWidget {
   final String text;
   final Color color;
   final IconData icon;
   final VoidCallback onTap;
+  final int index; // Index to determine direction and delay
 
   const _BigButton({
     required this.text,
     required this.color,
     required this.icon,
     required this.onTap,
-    super.key,
+    required this.index,
   });
 
   @override
+  __BigButtonState createState() => __BigButtonState();
+}
+
+class __BigButtonState extends State<_BigButton> {
+  bool _animate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Staggered delay for each button
+    Future.delayed(Duration(milliseconds: 150 * widget.index), () {
+      if (mounted) {
+        setState(() {
+          _animate = true;
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 130,
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 56, color: Colors.white.withOpacity(0.9)),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Text(
-                text,
-                style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.w400),
+    // Determine direction based on index (even/odd)
+    final isLeft = widget.index % 2 == 0;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      transform: Matrix4.translationValues(
+        _animate ? 0 : (isLeft ? -screenWidth : screenWidth),
+        0,
+        0,
+      ),
+      child: SizedBox(
+        height: 130,
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: widget.onTap,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: widget.color,
+            foregroundColor: Colors.white,
+            elevation: 4,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: Row(
+            children: [
+              Icon(widget.icon, size: 56, color: Colors.white.withOpacity(0.9)),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Text(
+                  widget.text,
+                  style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.w400),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

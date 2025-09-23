@@ -3,8 +3,39 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../routes.dart';
 
+// A simple data class to hold button information
+class _CategoryInfo {
+  final String text;
+  final Color color;
+  final IconData icon;
+  final String route;
+
+  const _CategoryInfo({
+    required this.text,
+    required this.color,
+    required this.icon,
+    required this.route,
+  });
+}
+
 class ProductCategorySelectionScreen extends StatelessWidget {
   const ProductCategorySelectionScreen({super.key});
+
+  // Store button data in a list for easier management
+  static const _categories = <_CategoryInfo>[
+    _CategoryInfo(
+      text: 'Underfloor Heating Products',
+      color: Color(0xFFDD4F2E),
+      icon: Icons.thermostat,
+      route: Routes.underfloorHeatingFactsheetsRoute,
+    ),
+    _CategoryInfo(
+      text: 'Frost Protection Products',
+      color: Color(0xFF009ADC),
+      icon: Icons.ac_unit,
+      route: Routes.frostProtectionFactsheetsRoute,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -18,62 +49,42 @@ class ProductCategorySelectionScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      // AppBar at the very top (status bar remains visible)
       appBar: AppBar(
         title: Text('Select Product Category', style: GoogleFonts.raleway()),
         backgroundColor: const Color(0xFF333333),
         foregroundColor: Colors.white,
-        systemOverlayStyle: SystemUiOverlayStyle.light, // white status bar icons
+        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
-
       body: Stack(
         children: [
-          // Background pattern
           Positioned.fill(
             child: Image.asset(
               'assets/images/diagonalpatternbg.jpg',
               fit: BoxFit.cover,
             ),
           ),
-
-          // Gradient overlay
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(gradient: gradient),
             ),
           ),
-
-          // Content (no SafeArea, AppBar already handles status bar)
-          Column(
-            children: [
-              const SizedBox(height: 24),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  children: [
-                    _BigButton(
-                      text: 'Underfloor Heating Products',
-                      color: const Color(0xFFDD4F2E),
-                      icon: Icons.thermostat,
-                      onTap: () => Navigator.pushNamed(
-                        context,
-                        Routes.underfloorHeatingFactsheetsRoute,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    _BigButton(
-                      text: 'Frost Protection Products',
-                      color: const Color(0xFF009ADC),
-                      icon: Icons.ac_unit,
-                      onTap: () => Navigator.pushNamed(
-                        context,
-                        Routes.frostProtectionFactsheetsRoute,
-                      ),
-                    ),
-                  ],
+          // Use a ListView for the buttons to easily get the index
+          ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            itemCount: _categories.length,
+            itemBuilder: (context, index) {
+              final category = _categories[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: _BigButton(
+                  text: category.text,
+                  color: category.color,
+                  icon: category.icon,
+                  onTap: () => Navigator.pushNamed(context, category.route),
+                  index: index, // Pass the index for the animation
                 ),
-              ),
-            ],
+              );
+            },
           ),
         ],
       ),
@@ -81,47 +92,79 @@ class ProductCategorySelectionScreen extends StatelessWidget {
   }
 }
 
-class _BigButton extends StatelessWidget {
+class _BigButton extends StatefulWidget {
   final String text;
   final Color color;
   final IconData icon;
   final VoidCallback onTap;
+  final int index; // Index to determine direction and delay
 
   const _BigButton({
     required this.text,
     required this.color,
     required this.icon,
     required this.onTap,
+    required this.index,
   });
 
   @override
+  __BigButtonState createState() => __BigButtonState();
+}
+
+class __BigButtonState extends State<_BigButton> {
+  bool _animate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Staggered delay for each button
+    Future.delayed(Duration(milliseconds: 150 * widget.index), () {
+      if (mounted) {
+        setState(() {
+          _animate = true;
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 130,
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 56, color: Colors.white.withOpacity(0.9)),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Text(
-                text,
-                style: GoogleFonts.raleway(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w300,
+    // Determine direction based on index (even/odd)
+    final isLeft = widget.index % 2 == 0;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      transform: Matrix4.translationValues(
+        _animate ? 0 : (isLeft ? -screenWidth : screenWidth),
+        0,
+        0,
+      ),
+      child: SizedBox(
+        height: 130,
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: widget.onTap,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: widget.color,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 4,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+          ),
+          child: Row(
+            children: [
+              Icon(widget.icon, size: 56, color: Colors.white.withOpacity(0.9)),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Text(
+                  widget.text,
+                  style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.w400),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
