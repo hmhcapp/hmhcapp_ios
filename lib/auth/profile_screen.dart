@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../routes.dart';
 
@@ -45,6 +46,7 @@ class UserProfileData {
 }
 
 enum _ProfileState { loading, notFound, loaded }
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -191,6 +193,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // --- NEW FUNCTION TO SEND FEEDBACK EMAIL ---
+  Future<void> _sendFeedbackEmail() async {
+    const toEmail = 'tech@heatmat.co.uk';
+    const subject = 'App Feedback / Suggestion';
+    const body = 'Hello Heat Mat Team,\n\nI have the following feedback:\n\n';
+
+    final mailtoUri = Uri(
+      scheme: 'mailto',
+      path: toEmail,
+      query: 'subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}',
+    );
+
+    try {
+      if (await canLaunchUrl(mailtoUri)) {
+        await launchUrl(mailtoUri);
+      } else {
+        // Fallback if no email client is found
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not find an email app to send feedback.')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to open email app: $e')),
+        );
+      }
+    }
+  }
+  // ------------------------------------------
+
   Future<void> _logout() async {
     await _auth.signOut();
     if (!mounted) return;
@@ -202,6 +237,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ... (Your build method remains mostly unchanged up to the _viewSection)
     final gradient = const LinearGradient(
       colors: [Colors.white, Color(0xFFF2F2F2)],
       begin: Alignment.topCenter,
@@ -393,7 +429,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ],
     );
   }
-
+  
   Widget _outlinedField(String label, TextEditingController ctrl, {TextInputType keyboardType = TextInputType.text}) {
     return TextField(
       controller: ctrl,
@@ -478,6 +514,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.w600)),
           ),
         ),
+
+        // --- ADD THE NEW FEEDBACK BUTTON HERE ---
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 50,
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _sendFeedbackEmail,
+            icon: const Icon(Icons.feedback_outlined, color: Colors.white),
+            label: Text('Feedback, Ideas, Suggestions',
+                style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.w600)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _greyBtn,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ),
+        // ------------------------------------------
 
         const SizedBox(height: 32),
 

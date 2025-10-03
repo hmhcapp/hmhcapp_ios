@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../routes.dart';
@@ -48,6 +47,13 @@ class InstallationChecklistHubScreen extends StatelessWidget {
       ],
     );
 
+    // Define horizontal padding value
+    const horizontalPadding = 32.0;
+
+    // Calculate the button size based on screen width minus padding
+    final screenWidth = MediaQuery.of(context).size.width;
+    final buttonSize = screenWidth - (horizontalPadding * 2);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -72,19 +78,23 @@ class InstallationChecklistHubScreen extends StatelessWidget {
             top: false,
             // Use a ListView for consistency and easy indexing
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+              padding: const EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: 32,
+              ),
               itemCount: _checklists.length,
               itemBuilder: (context, index) {
                 final checklist = _checklists[index];
                 return Padding(
-                  // Add spacing below each button except the last one
-                  padding: EdgeInsets.only(bottom: index == _checklists.length - 1 ? 0 : 24),
+                  // Add spacing below each button
+                  padding: const EdgeInsets.only(bottom: 24),
                   child: _BigButton(
                     text: checklist.text,
                     color: checklist.color,
                     icon: checklist.icon,
                     onTap: () => Navigator.pushNamed(context, checklist.route),
                     index: index, // Pass the index for the animation
+                    size: buttonSize, // Pass the calculated size
                   ),
                 );
               },
@@ -101,7 +111,8 @@ class _BigButton extends StatefulWidget {
   final Color color;
   final IconData icon;
   final VoidCallback onTap;
-  final int index; // Index to determine direction and delay
+  final int index;
+  final double size; // Property to hold the button size
 
   const _BigButton({
     required this.text,
@@ -109,6 +120,7 @@ class _BigButton extends StatefulWidget {
     required this.icon,
     required this.onTap,
     required this.index,
+    required this.size, // Make size a required parameter
   });
 
   @override
@@ -145,27 +157,29 @@ class __BigButtonState extends State<_BigButton> {
         0,
         0,
       ),
+      // Use the passed-in size for both height and width
       child: SizedBox(
-        height: 130,
-        width: double.infinity,
+        height: widget.size,
+        width: widget.size,
         child: ElevatedButton(
           onPressed: widget.onTap,
           style: ElevatedButton.styleFrom(
             backgroundColor: widget.color,
             foregroundColor: Colors.white,
             elevation: 4,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: Row(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(widget.icon, size: 56, color: Colors.white.withOpacity(0.9)),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Text(
-                  widget.text,
-                  style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.w400),
-                ),
+              Icon(widget.icon, size: 72, color: Colors.white.withOpacity(0.9)),
+              const SizedBox(height: 16),
+              Text(
+                widget.text,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.raleway(fontSize: 20, fontWeight: FontWeight.w400),
               ),
             ],
           ),

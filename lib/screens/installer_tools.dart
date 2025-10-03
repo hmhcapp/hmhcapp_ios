@@ -72,23 +72,46 @@ class InstallerToolsScreen extends StatelessWidget {
           Positioned.fill(
             child: Container(decoration: BoxDecoration(gradient: gradient)),
           ),
-          // Use a ListView for the buttons to easily get the index
-          ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-            itemCount: _tools.length,
-            itemBuilder: (context, index) {
-              final tool = _tools[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: _BigButton(
-                  text: tool.text,
-                  color: tool.color,
-                  icon: tool.icon,
-                  onTap: () => Navigator.pushNamed(context, tool.route),
-                  index: index, // Pass the index for the animation
-                ),
-              );
-            },
+          // Wrap the LayoutBuilder with a SafeArea widget
+          // This ensures the layout respects the system UI (like the bottom navigation bar)
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const verticalPadding = 24.0;
+                const spacing = 24.0;
+                final buttonCount = _tools.length;
+
+                // Calculate the total height used by padding and spacing
+                // The last item does not have bottom padding in this calculation
+                final totalSpacing = (verticalPadding * 2) + (spacing * (buttonCount -1));
+                
+                // Calculate the height available for each button within the safe area
+                final buttonHeight = (constraints.maxHeight - totalSpacing) / buttonCount;
+
+                // Use a fallback height in case the calculated height is invalid (e.g., during orientation changes)
+                final safeButtonHeight = buttonHeight > 0 ? buttonHeight : 130.0;
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: verticalPadding),
+                  itemCount: buttonCount,
+                  itemBuilder: (context, index) {
+                    final tool = _tools[index];
+                    return Padding(
+                      // Add spacing below each button except the last one
+                      padding: EdgeInsets.only(bottom: index == buttonCount - 1 ? 0 : spacing),
+                      child: _BigButton(
+                        text: tool.text,
+                        color: tool.color,
+                        icon: tool.icon,
+                        onTap: () => Navigator.pushNamed(context, tool.route),
+                        index: index,
+                        height: safeButtonHeight, // Pass the calculated height
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -101,7 +124,8 @@ class _BigButton extends StatefulWidget {
   final Color color;
   final IconData icon;
   final VoidCallback onTap;
-  final int index; // Index to determine direction and delay
+  final int index;
+  final double height; // Property for button height
 
   const _BigButton({
     required this.text,
@@ -109,6 +133,7 @@ class _BigButton extends StatefulWidget {
     required this.icon,
     required this.onTap,
     required this.index,
+    required this.height,
   });
 
   @override
@@ -146,7 +171,7 @@ class __BigButtonState extends State<_BigButton> {
         0,
       ),
       child: SizedBox(
-        height: 130,
+        height: widget.height, // Use the passed-in height
         width: double.infinity,
         child: ElevatedButton(
           onPressed: widget.onTap,
