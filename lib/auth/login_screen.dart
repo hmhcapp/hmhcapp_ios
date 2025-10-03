@@ -1,6 +1,7 @@
+// lib/auth/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter/services.dart'; // <-- added
+import 'package:flutter/services.dart';
 import 'auth_service.dart';
 import '../routes.dart';
 
@@ -51,6 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
               width: double.infinity,
               child: Stack(
                 fit: StackFit.expand,
+                // --- SYNTAX FIX: The 'children' property needs a list, starting with [ ---
                 children: [
                   Image.asset('assets/images/front_image.jpg', fit: BoxFit.cover),
                   Positioned(
@@ -72,6 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                                   
                     const SizedBox(height: 32),
                     Text(
                       'Welcome',

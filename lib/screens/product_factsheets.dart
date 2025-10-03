@@ -1,21 +1,25 @@
-// product_factsheets.dart
+// lib/screens/product_factsheets.dart
+//
+// Mobile-only (Android/iOS) implementation for listing and saving bundled PDFs.
+// - Share uses share_plus
+// - View uses PdfViewerScreen (Syncfusion-based viewer; no platform view issues)
+// - Save uses flutter_file_dialog to present the native picker on both Android and iOS
 
 import 'dart:io';
-import 'dart:typed_data'; // <-- ADD THIS IMPORT
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:open_filex/open_filex.dart';
-import 'package:file_saver/file_saver.dart'; // <-- ADD THIS IMPORT
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 
-/// -------------------- MODELS --------------------
+import '../widgets/pdf_viewer_screen.dart';
 
 class PdfInfo {
   final String name;
-  final String url; // can be gs:// or https
-  const PdfInfo(this.name, this.url);
+  final String assetPath;
+  const PdfInfo(this.name, this.assetPath);
 }
 
 abstract class ContentItem {}
@@ -37,129 +41,138 @@ class CategoryData {
   CategoryData(this.title, this.items);
 }
 
-/// -------------------- FACTSHEETS DATA --------------------
-// ... (All your existing data remains unchanged)
+// ---------------- DATA ----------------
 final List<CategoryData> underfloorHeatingFactsheetsData = [
   CategoryData("Heating Mats", [
     SubCategoryItem("Heat Mat Pro", [
-      PdfInfo("PKM-110 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-110W-heating-mat-factsheet.pdf"),
-      PdfInfo("PKM-160 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-160W-heating-mat-factsheet.pdf"),
-      PdfInfo("PKM-200 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-200W-heating-mat-factsheet.pdf"),
-      PdfInfo("PKM-240 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKM/Heat-Mat-PKM-240W-heating-mat-factsheet.pdf"),
+      PdfInfo("Heat Mat PKM 110W heating mat factsheet", "assets/pdfs/FACTSHEETS/PKM/Heat-Mat-PKM-110W-heating-mat-factsheet.pdf"),
+      PdfInfo("Heat Mat PKM 160W heating mat factsheet", "assets/pdfs/FACTSHEETS/PKM/Heat-Mat-PKM-160W-heating-mat-factsheet.pdf"),
+      PdfInfo("Heat Mat PKM 200W heating mat factsheet", "assets/pdfs/FACTSHEETS/PKM/Heat-Mat-PKM-200W-heating-mat-factsheet.pdf"),
+      PdfInfo("Heat Mat PKM 240W heating mat factsheet", "assets/pdfs/FACTSHEETS/PKM/Heat-Mat-PKM-240W-heating-mat-factsheet.pdf"),
     ]),
     SubCategoryItem("Heat My Home", [
-      PdfInfo("HMH160W factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/HMHMAT/Heat-My-Home-HMHMAT-factsheet.pdf"),
+      PdfInfo("Heat My Home HMHMAT factsheet", "assets/pdfs/FACTSHEETS/HMHMAT/Heat-My-Home-HMHMAT-factsheet.pdf"),
     ]),
   ]),
   CategoryData("Heating Cables", [
     SubCategoryItem("Heat Mat Pro", [
-      PdfInfo("PKC-3.0 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKC/Heat-Mat-PKC-3mm-cable-factsheet.pdf"),
-      PdfInfo("PKC-5.0 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/PKC/Heat-Mat-PKC-5mm-cable-factsheet.pdf"),
+      PdfInfo("Heat Mat PKC 3mm cable factsheet", "assets/pdfs/FACTSHEETS/PKC/Heat-Mat-PKC-3mm-cable-factsheet.pdf"),
+      PdfInfo("Heat Mat PKC 5mm cable factsheet", "assets/pdfs/FACTSHEETS/PKC/Heat-Mat-PKC-5mm-cable-factsheet.pdf"),
     ]),
     SubCategoryItem("Heat My Home", [
-      PdfInfo("HMHCAB factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/HMHCAB/Heat-My-Home-HMHCAB-factsheet.pdf"),
+      PdfInfo("Heat My Home HMHCAB factsheet", "assets/pdfs/FACTSHEETS/HMHCAB/Heat-My-Home-HMHCAB-factsheet.pdf"),
     ]),
   ]),
   CategoryData("Combymat/Foil Heating", [
-    PdfItem(PdfInfo("CBM-150 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/CBM/Heat-Mat-CBM-Combymat-factsheet.pdf")),
-    PdfItem(PdfInfo("CBM-OVE factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/CBM/Heat-Mat-CBM-Combymat-overlay-boards-factsheet.pdf")),
+    PdfItem(PdfInfo("Heat Mat CBM Combymat factsheet", "assets/pdfs/FACTSHEETS/CBM/Heat-Mat-CBM-Combymat-factsheet.pdf")),
+    PdfItem(PdfInfo("Heat Mat CBM Combymat overlay boards factsheet", "assets/pdfs/FACTSHEETS/CBM/Heat-Mat-CBM-Combymat-overlay-boards-factsheet.pdf")),
   ]),
   CategoryData("Thermostats", [
-    PdfItem(PdfInfo("HMT5 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/HMT5/Heat-Mat-HMT5-thermostat-factsheet.pdf")),
-    PdfItem(PdfInfo("HMH200 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/HMH200/Heat-My-Home-HMH200-Wifi-Thermostat-Factsheet.pdf")),
-    PdfItem(PdfInfo("HMH100 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/HMH100/Heat-My-Home-HMH100-Wifi-Thermostat-Factsheet.pdf")),
-    PdfItem(PdfInfo("NGTouch factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/NGT/Heat-Mat-NGTouch-thermostat-factsheet.pdf")),
-    PdfItem(PdfInfo("NGTWifi factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/NGTWIFI/Heat-Mat-NGTouch-wifi-thermostat-factsheet.pdf")),
-    PdfItem(PdfInfo("TPS32 factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/THERMOSTATS/TPS/Heat-Mat-TPS31-thermostat-factsheet.pdf")),
+    PdfItem(PdfInfo("Heat Mat HMT5 thermostat factsheet", "assets/pdfs/FACTSHEETS/THERMOSTATS/HMT5/Heat-Mat-HMT5-thermostat-factsheet.pdf")),
+    PdfItem(PdfInfo("Heat My Home HMH200 Wifi Thermostat Factsheet", "assets/pdfs/FACTSHEETS/THERMOSTATS/HMH200/Heat-My-Home-HMH200-Wifi-Thermostat-Factsheet.pdf")),
+    PdfItem(PdfInfo("Heat My Home HMH100 Wifi Thermostat Factsheet", "assets/pdfs/FACTSHEETS/THERMOSTATS/HMH100/Heat-My-Home-HMH100-Wifi-Thermostat-Factsheet.pdf")),
+    PdfItem(PdfInfo("Heat Mat NGTouch thermostat factsheet", "assets/pdfs/FACTSHEETS/THERMOSTATS/NGT/Heat-Mat-NGTouch-thermostat-factsheet.pdf")),
+    PdfItem(PdfInfo("Heat Mat NGTouch wifi thermostat factsheet", "assets/pdfs/FACTSHEETS/THERMOSTATS/NGTWIFI/Heat-Mat-NGTouch-wifi-thermostat-factsheet.pdf")),
+    PdfItem(PdfInfo("Heat Mat TPS31 thermostat factsheet", "assets/pdfs/FACTSHEETS/THERMOSTATS/TPS/Heat-Mat-TPS31-thermostat-factsheet.pdf")),
   ]),
   CategoryData("Insulation Boards", [
-    PdfItem(PdfInfo("TTB Insulation factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/TTB/Heat-Mat-TTB-insulation-board-factsheet.pdf")),
+    PdfItem(PdfInfo("Heat Mat TTB insulation board factsheet", "assets/pdfs/FACTSHEETS/TTB/Heat-Mat-TTB-insulation-board-factsheet.pdf")),
   ]),
 ];
 
 final List<CategoryData> frostProtectionFactsheetsData = [
   CategoryData("Trace Heating", [
-    PdfItem(PdfInfo("Trace Heating Cable factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/Trace-Heating-Factsheet.pdf")),
+    PdfItem(PdfInfo("Trace Heating Factsheet", "assets/pdfs/FACTSHEETS/ICEANDSNOW/Trace-Heating-Factsheet.pdf")),
   ]),
   CategoryData("Pipe Protection", [
-    PdfItem(PdfInfo("PipeGuard factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/PipeGuard_Factsheet.pdf")),
+    PdfItem(PdfInfo("PipeGuard Factsheet", "assets/pdfs/FACTSHEETS/ICEANDSNOW/PipeGuard_Factsheet.pdf")),
   ]),
   CategoryData("Gutter & Roof Heating", [
-    PdfItem(PdfInfo("Gutter and Roof Heating Cable factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/Roof-and-gutter-heating-factsheet.pdf")),
+    PdfItem(PdfInfo("Roof and gutter heating factsheet", "assets/pdfs/FACTSHEETS/ICEANDSNOW/Roof-and-gutter-heating-factsheet.pdf")),
   ]),
   CategoryData("Driveway & Ramp Heating", [
-    PdfItem(PdfInfo("Driveway Heating Cable factsheet", "gs://hm-hc-app.firebasestorage.app/FACTSHEETS/ICEANDSNOW/Heat-Mat-50W-Snow-Melting-Cable-Factsheet.pdf")),
+    PdfItem(PdfInfo("Heat Mat 50W Snow Melting Cable Factsheet", "assets/pdfs/FACTSHEETS/ICEANDSNOW/Heat-Mat-50W-Snow-Melting-Cable-Factsheet.pdf")),
   ]),
 ];
 
+// ---------------- HELPERS ----------------
 
-/// -------------------- HELPERS --------------------
-
-// This helper is still used by shareFile and downloadAndOpenFile, so we keep it.
-Future<File> _downloadToTemp(PdfInfo pdf) async {
+Future<File> _copyAssetToTempFile(String assetPath) async {
   final dir = await getTemporaryDirectory();
-  final file = File('${dir.path}/${pdf.name.replaceAll(' ', '_')}.pdf');
-
-  final ref = FirebaseStorage.instance.refFromURL(pdf.url);
-  await ref.writeToFile(file);
+  final file = File('${dir.path}/${assetPath.split('/').last}');
+  final byteData = await rootBundle.load(assetPath);
+  await file.writeAsBytes(
+    byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
+  );
   return file;
 }
 
 Future<void> shareFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
   try {
-    toast('Preparing to share...');
-    final f = await _downloadToTemp(pdf);
-    await Share.shareXFiles([XFile(f.path)], text: pdf.name);
+    toast('Preparing to share…');
+    final tempFile = await _copyAssetToTempFile(pdf.assetPath);
+    await Share.shareXFiles([XFile(tempFile.path)], text: pdf.name);
   } catch (e) {
     toast('Share failed: $e');
   }
 }
 
-// =================== THIS IS THE CORRECTED FUNCTION ===================
-/// Saves the file to a user-visible location like 'Downloads'.
-Future<void> downloadFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
+/// Open a real "Save As / Save to Files" system picker on Android and iOS.
+Future<void> _saveWithSystemPicker({
+  required Uint8List bytes,
+  required String suggestedName,
+  required void Function(String) toast,
+}) async {
   try {
-    toast('Starting download...');
-    final ref = FirebaseStorage.instance.refFromURL(pdf.url);
+    final safe = suggestedName
+        .replaceAll(RegExp(r'[^\w\s.-]+'), '')
+        .replaceAll(' ', '_')
+        .replaceAll('.pdf', '')
+        .trim();
 
-    // Get the file data as bytes
-    final Uint8List? bytes = await ref.getData();
-
-    if (bytes == null) {
-      throw Exception("Could not download file data.");
-    }
-
-    // Use file_saver to open the "Save As" dialog
-    final sanitizedFileName = pdf.name.replaceAll(RegExp(r'[^\w\s]+'), '').replaceAll(' ', '_');
-    await FileSaver.instance.saveFile(
-      name: sanitizedFileName,
-      bytes: bytes,
-      ext: 'pdf',
-      mimeType: MimeType.pdf,
+    final resultPath = await FlutterFileDialog.saveFile(
+      params: SaveFileDialogParams(
+        data: bytes,
+        fileName: '$safe.pdf',
+        mimeTypesFilter: const ['application/pdf'],
+      ),
     );
-    
-    // The toast is now more of a confirmation, as the user has actively saved the file.
-    toast('File save dialog has been opened.');
 
+    if (resultPath == null || resultPath.isEmpty) {
+      toast('Save cancelled.');
+    } else {
+      toast('Saved.');
+    }
   } catch (e) {
     toast('Save failed: $e');
   }
 }
-// =======================================================================
 
-
-Future<void> downloadAndOpenFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
+Future<void> downloadFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
   try {
-    toast('Downloading to open...');
-    final f = await _downloadToTemp(pdf);
-    await OpenFilex.open(f.path);
+    toast('Preparing file…');
+    final byteData = await rootBundle.load(pdf.assetPath);
+    final bytes = byteData.buffer.asUint8List();
+    await _saveWithSystemPicker(bytes: bytes, suggestedName: pdf.name, toast: toast);
   } catch (e) {
-    toast('Open failed: $e');
+    toast('Save failed: $e');
   }
 }
 
-/// -------------------- REUSABLE UI --------------------
-// ... (All your existing UI widgets remain unchanged)
+void openPdf(BuildContext context, PdfInfo pdf) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PdfViewerScreen(
+        assetPath: pdf.assetPath,
+        screenTitle: pdf.name,
+      ),
+    ),
+  );
+}
+
+// ---------------- UI ----------------
+
 class Category extends StatelessWidget {
   final String title;
   final bool expanded;
@@ -231,12 +244,14 @@ class SubCategory extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: GoogleFonts.raleway(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFFf85c37),
-              )),
+          Text(
+            title,
+            style: GoogleFonts.raleway(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFFf85c37),
+            ),
+          ),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.only(left: 16),
@@ -251,13 +266,15 @@ class SubCategory extends StatelessWidget {
 class PdfLink extends StatelessWidget {
   final PdfInfo pdfInfo;
   final VoidCallback onShare;
-  final VoidCallback onDownloadAndOpen;
+  final VoidCallback onView;
+  final VoidCallback onDownload;
 
   const PdfLink({
     super.key,
     required this.pdfInfo,
     required this.onShare,
-    required this.onDownloadAndOpen,
+    required this.onView,
+    required this.onDownload,
   });
 
   @override
@@ -269,10 +286,9 @@ class PdfLink extends StatelessWidget {
         children: [
           const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
           const SizedBox(width: 8),
-          // Name taps = Download & Open
           Expanded(
             child: InkWell(
-              onTap: onDownloadAndOpen,
+              onTap: onView,
               child: Text(pdfInfo.name, style: textStyle),
             ),
           ),
@@ -281,19 +297,16 @@ class PdfLink extends StatelessWidget {
             tooltip: 'Share',
             onPressed: onShare,
           ),
-          // Use standard download icon for "Download & Open"
           IconButton(
-            icon: const Icon(Icons.download), // <- updated icon
-            tooltip: 'Download',
-            onPressed: onDownloadAndOpen,
+            icon: const Icon(Icons.download_for_offline_outlined),
+            tooltip: 'Save to Device',
+            onPressed: onDownload,
           ),
         ],
       ),
     );
   }
 }
-
-/// -------------------- FACTSHEETS SCREEN --------------------
 
 class ProductFactsheetsScreen extends StatefulWidget {
   final String categoryTitle;
@@ -341,7 +354,7 @@ class _ProductFactsheetsScreenState extends State<ProductFactsheetsScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _SearchField(
-              hint: 'Search Factsheets (e.g., PKM-160, Thermostats...)',
+              hint: 'Search Factsheets (e.g., PKM-160, Thermostats…)',
               value: searchQuery,
               onChanged: (v) => setState(() => searchQuery = v),
             ),
@@ -391,7 +404,8 @@ class _ProductFactsheetsScreenState extends State<ProductFactsheetsScreen> {
                                                 PdfLink(
                                                   pdfInfo: pdf,
                                                   onShare: () => shareFile(context, pdf, _toast),
-                                                  onDownloadAndOpen: () => downloadAndOpenFile(context, pdf, _toast),
+                                                  onView: () => openPdf(context, pdf),
+                                                  onDownload: () => downloadFile(context, pdf, _toast),
                                                 ),
                                             ],
                                           ),
@@ -400,7 +414,8 @@ class _ProductFactsheetsScreenState extends State<ProductFactsheetsScreen> {
                                         PdfLink(
                                           pdfInfo: item.info,
                                           onShare: () => shareFile(context, item.info, _toast),
-                                          onDownloadAndOpen: () => downloadAndOpenFile(context, item.info, _toast),
+                                          onView: () => openPdf(context, item.info),
+                                          onDownload: () => downloadFile(context, item.info, _toast),
                                         ),
                                   ],
                                 );
@@ -417,7 +432,7 @@ class _ProductFactsheetsScreenState extends State<ProductFactsheetsScreen> {
   }
 
   void _toast(String msg) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Hide previous toasts
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 

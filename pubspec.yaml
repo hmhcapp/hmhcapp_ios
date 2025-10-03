@@ -2,7 +2,7 @@ name: hmhcapp_ios
 description: "Heat Mat installer app (Flutter)"
 publish_to: 'none'
 
-version: 1.0.1+1
+version: 1.0.2+2
 
 environment:
   sdk: ^3.9.0
@@ -13,12 +13,11 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
-  # ---- Firebase (aligned set) ----
+  # ---- Firebase (reverted to your original, working set) ----
   firebase_core: ^3.15.2
   firebase_auth: ^5.7.0
   cloud_firestore: ^5.6.12
   firebase_storage: ^12.4.10
-  
 
   # ---- UI / Utils ----
   google_fonts: ^6.2.1
@@ -31,10 +30,15 @@ dependencies:
   flutter_svg: ^2.0.10+1
   intl: ^0.19.0
   http: ^1.2.2
-  file_saver: ^0.2.12 
   shimmer: ^3.0.0
   showcaseview: ^3.0.0
-  
+
+  # ---- Mobile "Save As" picker (Android + iOS) ----
+  flutter_file_dialog: ^3.0.2
+
+  # ---- PURE-FLUTTER PDF viewer (UI overlays correctly) ----
+  syncfusion_flutter_pdfviewer: ^29.1.33
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -44,30 +48,52 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
   assets:
-    - assets/images/logo.png
-    - assets/images/front_image.jpg
-    - assets/images/diagonalpatternbg.jpg
-    - assets/images/hmt5_wifi.png
-    - assets/images/hmh200_wifi.png
-    - assets/images/ngt_wifi.png
-    - assets/images/google_play_logo.png
-    - assets/images/app_store_badge.png
-    - assets/images/cablespacing.png
-    - assets/images/pkc3spacing.png
-    - assets/images/pkc5spacing.png
-    - assets/images/hmhspacing.png
-    - assets/images/apple_glyph_dark.png
+    - assets/images/
+    - assets/pdfs/
+    # Factsheets
+    - assets/pdfs/FACTSHEETS/
+    - assets/pdfs/FACTSHEETS/CBM/
+    - assets/pdfs/FACTSHEETS/HMHCAB/
+    - assets/pdfs/FACTSHEETS/HMHMAT/
+    - assets/pdfs/FACTSHEETS/ICEANDSNOW/
+    - assets/pdfs/FACTSHEETS/PKC/
+    - assets/pdfs/FACTSHEETS/PKM/
+    - assets/pdfs/FACTSHEETS/THERMOSTATS/
+    - assets/pdfs/FACTSHEETS/THERMOSTATS/HMH100/
+    - assets/pdfs/FACTSHEETS/THERMOSTATS/HMH200/
+    - assets/pdfs/FACTSHEETS/THERMOSTATS/HMT5/
+    - assets/pdfs/FACTSHEETS/THERMOSTATS/NGT/
+    - assets/pdfs/FACTSHEETS/THERMOSTATS/NGTWIFI/
+    - assets/pdfs/FACTSHEETS/THERMOSTATS/TPS/
+    - assets/pdfs/FACTSHEETS/TTB/
+    # Instructions
+    - assets/pdfs/INSTRUCTIONS/
+    - assets/pdfs/INSTRUCTIONS/CBM/
+    - assets/pdfs/INSTRUCTIONS/HMHCAB/
+    - assets/pdfs/INSTRUCTIONS/HMHMAT/
+    - assets/pdfs/INSTRUCTIONS/ICEANDSNOW/
+    - assets/pdfs/INSTRUCTIONS/PKC/
+    - assets/pdfs/INSTRUCTIONS/PKM/
+    - assets/pdfs/INSTRUCTIONS/THERMOSTATS/
+    - assets/pdfs/INSTRUCTIONS/THERMOSTATS/HMH100/
+    - assets/pdfs/INSTRUCTIONS/THERMOSTATS/HMH200/
+    - assets/pdfs/INSTRUCTIONS/THERMOSTATS/HMT5/
+    - assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGT/
+    - assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGTWIFI/
+    - assets/pdfs/INSTRUCTIONS/THERMOSTATS/TPS/
+    # Case studies
+    - assets/pdfs/CASESTUDIES/
+    - assets/pdfs/CASESTUDIES/frontpages/
 
 flutter_native_splash:
-  color: "#111111"                         
+  color: "#111111"
   image: assets/images/splash_logo_final_white.png
   android: true
   ios: true
   android_gravity: center
   ios_content_mode: center
-
-  # Android 12 requires an extra config
   android_12:
     image: assets/images/splash_logo_final_white.png
     icon_background_color: "#111111"
@@ -78,4 +104,3 @@ flutter_launcher_icons:
   image_path: assets/images/512_x_512_app_icon.png
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: assets/images/512_x_512_app_icon.png
-
