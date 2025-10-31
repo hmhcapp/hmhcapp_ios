@@ -44,3 +44,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 AuthKey_*.p8
+
+# Keystores (never commit secrets)
+android/keystore/
+*.jks
+*.keystore
+android/key.properties.local
