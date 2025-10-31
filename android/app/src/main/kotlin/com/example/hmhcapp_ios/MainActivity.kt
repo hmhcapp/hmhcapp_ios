@@ -1,4 +1,4 @@
-package com.example.hmhcapp_ios
+package com.collection.hmhcapp
 
 import io.flutter.embedding.android.FlutterActivity
 
