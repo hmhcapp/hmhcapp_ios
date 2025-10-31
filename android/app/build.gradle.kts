@@ -66,6 +66,7 @@ android {
             signingConfig = signingConfigs.getByName("release")
             // Keep minification off by default to avoid surprises; enable later if desired.
             isMinifyEnabled = false
+            isShrinkResources = false
             // If you turn minify on, keep these proguard files:
             // proguardFiles(
             //     getDefaultProguardFile("proguard-android-optimize.txt"),
