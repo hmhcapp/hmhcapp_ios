@@ -1,8 +1,8 @@
-name: hmhcapp_ios
-description: "Heat Mat installer app (Flutter)"
+name: Heat Mat
+description: "Heat Mat installer app"
 publish_to: 'none'
 
-version: 1.4.0+6
+version: 1.4.0+7
 
 environment:
   sdk: ^3.9.0
