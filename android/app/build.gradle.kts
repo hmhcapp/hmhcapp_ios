@@ -27,7 +27,7 @@ android {
     namespace = "com.collection.hmhcapp"
 
     // Use explicit SDKs to satisfy Play requirements; minSdk still comes from Flutter.
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
