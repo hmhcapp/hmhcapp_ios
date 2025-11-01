@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
@@ -8,41 +10,81 @@ class ThermostatAppData {
   final String thermostatName;
   final String appName;
   final String imageAsset;   // e.g. assets/images/hmt5_wifi.png
-  final String appStoreUrl;  // Apple App Store URL
+  final String iosUrl;       // Apple App Store URL
+  final String androidUrl;   // Google Play URL
   final double paddingTop;
+
   const ThermostatAppData({
     required this.thermostatName,
     required this.appName,
     required this.imageAsset,
-    required this.appStoreUrl,
+    required this.iosUrl,
+    required this.androidUrl,
     this.paddingTop = 0,
   });
 }
 
+// iOS
 const _tuyaSmartIOS = 'https://apps.apple.com/app/tuya-smart/id1034649547';
 const _owd5IOS = 'https://apps.apple.com/app/oj-microline-owd5/id1326069503';
+
+// ANDROID (replace the placeholders below with your exact Play IDs if needed)
+const _tuyaSmartAndroid =
+    'https://play.google.com/store/apps/details?id=com.tuya.smart&utm_source=emea_Med';
+const _owd5Android =
+    'https://play.google.com/store/apps/details?id=com.ojelectronics.owd5&utm_source=emea_Med';
 
 final List<ThermostatAppData> thermostatAppList = [
   ThermostatAppData(
     thermostatName: 'HMT5 Wifi Thermostat',
     appName: 'Uses Tuya Smart App',
     imageAsset: 'assets/images/hmt5_wifi.png',
-    appStoreUrl: _tuyaSmartIOS,
+    iosUrl: _tuyaSmartIOS,
+    androidUrl: _tuyaSmartAndroid,
   ),
   ThermostatAppData(
     thermostatName: 'HMH200 Wifi Thermostat',
     appName: 'Uses Tuya Smart App',
     imageAsset: 'assets/images/hmh200_wifi.png',
-    appStoreUrl: _tuyaSmartIOS,
+    iosUrl: _tuyaSmartIOS,
+    androidUrl: _tuyaSmartAndroid,
   ),
   ThermostatAppData(
     thermostatName: 'NGT-3.0-WIFI Wifi Thermostat',
     appName: 'Uses OWD5 App',
     imageAsset: 'assets/images/ngt_wifi.png',
-    appStoreUrl: _owd5IOS,
+    iosUrl: _owd5IOS,
+    androidUrl: _owd5Android,
     paddingTop: 8,
   ),
 ];
+
+bool get _isIOS => !kIsWeb && Platform.isIOS;
+bool get _isAndroid => !kIsWeb && Platform.isAndroid;
+
+/// Chooses the correct store URL for the current platform (defaults to Android on web).
+String _storeUrlForPlatform(ThermostatAppData app) {
+  if (_isIOS) return app.iosUrl;
+  return app.androidUrl;
+}
+
+/// Badge asset for the current platform (defaults to Google Play on web).
+String _badgeAssetForPlatform() {
+  if (_isIOS) return 'assets/images/app_store_badge.png';
+  return 'assets/images/google_play_badge.png';
+}
+
+/// Badge alt text for the current platform.
+String _badgeSemanticForPlatform() {
+  if (_isIOS) return 'Open in the App Store';
+  return 'Get it on Google Play';
+}
+
+/// Top-right logo for the current platform.
+String _cornerLogoForPlatform() {
+  if (_isIOS) return 'assets/images/apple_glyph_dark.png';
+  return 'assets/images/google_play_logo.png';
+}
 
 class ThermostatAppsScreen extends StatelessWidget {
   const ThermostatAppsScreen({super.key});
@@ -110,6 +152,11 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
 
   @override
   Widget build(BuildContext context) {
+    final storeUrl = _storeUrlForPlatform(widget.app);
+    final badgeAsset = _badgeAssetForPlatform();
+    final badgeSemantic = _badgeSemanticForPlatform();
+    final cornerLogo = _cornerLogoForPlatform();
+
     return Card(
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -175,7 +222,7 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
                               border: Border.all(color: Colors.transparent),
                             ),
                             child: QrImageView(
-                              data: widget.app.appStoreUrl,
+                              data: storeUrl,        // QR points to the correct store for platform
                               version: QrVersions.auto,
                               size: 180,
                               gapless: true,
@@ -183,12 +230,12 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
                           ),
                           const SizedBox(height: 12),
                           GestureDetector(
-                            onTap: () => _openStore(widget.app.appStoreUrl),
+                            onTap: () => _openStore(storeUrl),
                             child: Image.asset(
-                              'assets/images/app_store_badge.png',
+                              badgeAsset,
                               width: 200,
                               fit: BoxFit.contain,
-                              semanticLabel: 'Open in the App Store',
+                              semanticLabel: badgeSemantic,
                             ),
                           ),
                         ],
@@ -201,7 +248,7 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
               ],
             ),
 
-            // Apple PNG badge (top-right)
+            // Corner store logo (Apple on iOS, Play on Android/Web)
             Positioned(
               top: 0,
               right: 4,
@@ -219,7 +266,7 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
                   ],
                 ),
                 child: Image.asset(
-                  'assets/images/apple_glyph_dark.png', // <-- add to pubspec assets
+                  cornerLogo,
                   width: 50,
                   height: 50,
                   fit: BoxFit.contain,
