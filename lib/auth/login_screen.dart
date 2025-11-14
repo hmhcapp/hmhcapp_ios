@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
+
 import 'auth_service.dart';
 import '../routes.dart';
 
@@ -24,12 +25,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Force white system UI (status bar icons) from the first frame
+    // Force white system UI from the first frame
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,        // transparent status bar
+      statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light, // Android: white icons
-      statusBarBrightness: Brightness.dark,      // iOS: white icons
-      systemNavigationBarColor: Colors.black,    // optional nav bar color
+      statusBarBrightness: Brightness.dark, // iOS: white icons
+      systemNavigationBarColor: Colors.black,
       systemNavigationBarIconBrightness: Brightness.light,
     ));
   }
@@ -52,9 +53,11 @@ class _LoginScreenState extends State<LoginScreen> {
               width: double.infinity,
               child: Stack(
                 fit: StackFit.expand,
-                // --- SYNTAX FIX: The 'children' property needs a list, starting with [ ---
                 children: [
-                  Image.asset('assets/images/front_image.jpg', fit: BoxFit.cover),
+                  Image.asset(
+                    'assets/images/front_image.jpg',
+                    fit: BoxFit.cover,
+                  ),
                   Positioned(
                     left: 16,
                     top: MediaQuery.of(context).padding.top + 16,
@@ -70,11 +73,11 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24).copyWith(bottom: 32),
+                padding: const EdgeInsets.symmetric(horizontal: 24)
+                    .copyWith(bottom: 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                                   
                     const SizedBox(height: 32),
                     Text(
                       'Welcome',
@@ -86,10 +89,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Text(
                       'Sign in to your account',
-                      style: GoogleFonts.raleway(color: Colors.grey[700], fontSize: 16),
+                      style: GoogleFonts.raleway(
+                        color: Colors.grey[700],
+                        fontSize: 16,
+                      ),
                     ),
                     const SizedBox(height: 32),
-
                     _outlinedField(
                       label: 'Email',
                       onChanged: (v) => email = v,
@@ -101,9 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onChanged: (v) => password = v,
                       obscure: true,
                     ),
-
                     const SizedBox(height: 24),
-
                     SizedBox(
                       height: 50,
                       width: double.infinity,
@@ -111,13 +114,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: loading ? null : _submit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _orange,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                         child: loading
                             ? const SizedBox(
                                 width: 28,
                                 height: 28,
-                                child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
                               )
                             : Text(
                                 'Login',
@@ -128,38 +137,51 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                       ),
                     ),
-
                     if (error != null) ...[
                       const SizedBox(height: 16),
                       Text(
                         error!,
-                        style: GoogleFonts.raleway(color: const Color(0xFFC00000)),
+                        style: GoogleFonts.raleway(
+                          color: const Color(0xFFC00000),
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ],
-
                     const SizedBox(height: 12),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         TextButton(
-                          onPressed: () => Navigator.pushNamed(context, Routes.resetPassword),
-                          child: Text('Forgot Password?', style: GoogleFonts.raleway(color: _dark)),
+                          onPressed: loading
+                              ? null
+                              : () => Navigator.pushNamed(
+                                    context,
+                                    Routes.resetPassword,
+                                  ),
+                          child: Text(
+                            'Forgot Password?',
+                            style: GoogleFonts.raleway(color: _dark),
+                          ),
                         ),
                         TextButton(
-                          onPressed: () => Navigator.pushNamed(context, Routes.register),
-                          child: Text('Register', style: GoogleFonts.raleway(color: _dark)),
+                          onPressed: loading
+                              ? null
+                              : () => Navigator.pushNamed(
+                                    context,
+                                    Routes.register,
+                                  ),
+                          child: Text(
+                            'Register',
+                            style: GoogleFonts.raleway(color: _dark),
+                          ),
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 16),
-
                     TextButton(
-                      onPressed: _continueAsGuest,
+                      onPressed: loading ? null : _continueAsGuest,
                       child: Text(
                         'Continue as Guest',
                         style: GoogleFonts.raleway(
@@ -192,8 +214,12 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.raleway(color: Colors.black54),
-        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: _orange)),
-        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey.shade400)),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: _orange),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey),
+        ),
         border: const OutlineInputBorder(),
       ),
       style: GoogleFonts.raleway(color: _dark),
@@ -202,31 +228,48 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _submit() async {
     if (email.trim().isEmpty || password.isEmpty) {
-      setState(() => error = 'Please enter both email and password.');
+      setState(
+        () => error = 'Please enter both email and password.',
+      );
       return;
     }
-    setState(() { loading = true; error = null; });
+
+    setState(() {
+      loading = true;
+      error = null;
+    });
+
     try {
-      await AuthService.instance.signIn(email.trim(), password);
+      await AuthService.instance.signIn(
+        email.trim(),
+        password,
+      );
+
       if (!mounted) return;
+
+      // Online installer login:
+      // Go to main app; Firebase persistence handles future auto-login.
       Navigator.pushReplacementNamed(context, Routes.home);
     } catch (e) {
-      setState(() => error = e.toString());
+      setState(
+        () => error = 'Unable to sign in. Please check your details.',
+      );
     } finally {
-      if (mounted) setState(() => loading = false);
+      if (mounted) {
+        setState(() => loading = false);
+      }
     }
   }
 
   Future<void> _continueAsGuest() async {
-    setState(() { loading = true; error = null; });
-    try {
-      await AuthService.instance.signInAnonymously();
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, Routes.home);
-    } catch (e) {
-      setState(() => error = e.toString());
-    } finally {
-      if (mounted) setState(() => loading = false);
-    }
+    if (!mounted) return;
+
+    // Offline-safe guest mode: do not call Firebase.
+    setState(() {
+      loading = false;
+      error = null;
+    });
+
+    Navigator.pushReplacementNamed(context, Routes.home);
   }
 }
