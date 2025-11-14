@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'auth_service.dart';
+import '../main_home.dart';
 import 'login_screen.dart';
-import 'profile_screen.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -12,14 +12,22 @@ class AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
       stream: AuthService.instance.authState,
-      builder: (_, snap) {
-        if (snap.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
-        if (snap.data == null) {
+
+        final user = snapshot.data;
+
+        if (user == null) {
+          // Nobody signed in on this device
           return const LoginScreen();
         }
-        return const ProfileScreen();
+
+        // User is signed in, go straight to your main app
+        return HomeScreen();
       },
     );
   }
