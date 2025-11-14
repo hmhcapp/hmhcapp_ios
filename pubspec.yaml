@@ -1,8 +1,8 @@
 name: hmhcapp_ios
-description: "Heat Mat installer app"
+description: "Heat Mat installer app (Flutter)"
 publish_to: 'none'
 
-version: 1.4.0+12
+version: 1.4.0+13
 
 environment:
   sdk: ^3.9.0
@@ -13,7 +13,7 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
-  # ---- Firebase (reverted to your original, working set) ----
+  # ---- Firebase (core services) ----
   firebase_core: ^3.15.2
   firebase_auth: ^5.7.0
   cloud_firestore: ^5.6.12
@@ -30,13 +30,12 @@ dependencies:
   flutter_svg: ^2.0.10+1
   intl: ^0.19.0
   http: ^1.2.2
+  file_saver: ^0.2.12
   shimmer: ^3.0.0
   showcaseview: ^3.0.0
 
-  # ---- Mobile "Save As" picker (Android + iOS) ----
+  # ---- PDF viewing + native save (required by pdf_viewer_screen.dart) ----
   flutter_file_dialog: ^3.0.2
-
-  # ---- PURE-FLUTTER PDF viewer (UI overlays correctly) ----
   syncfusion_flutter_pdfviewer: ^29.1.33
 
 dev_dependencies:
