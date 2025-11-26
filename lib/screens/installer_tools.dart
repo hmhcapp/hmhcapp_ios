@@ -35,6 +35,12 @@ class InstallerToolsScreen extends StatelessWidget {
       icon: Icons.calculate_outlined,
       route: Routes.cableSpacingCalculator,
     ),
+	_ToolInfo(
+      text: 'Installation Video',
+      color: Color(0xFFE9882A),
+      icon: Icons.play_circle_outline,
+      route: Routes.installationVideo, 
+    ),
     _ToolInfo(
       text: 'Thermostat Apps',
       color: Color(0xFFE26A2D),
