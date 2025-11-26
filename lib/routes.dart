@@ -22,6 +22,7 @@ import 'screens/installation_checklist_hub.dart';
 import 'screens/heating_mat_checklist.dart';
 import 'screens/heating_cable_checklist.dart';
 import 'screens/register_warranty.dart';
+import 'screens/installation_video_screen.dart';
 
 // Auth
 import 'package:hmhcapp_ios/auth/login_screen.dart';
@@ -51,6 +52,7 @@ class Routes {
   static const installerTools = '/installer_tools';
   static const floorDiagrams = '/floor_diagrams';
   static const cableSpacingCalculator = '/cable_spacing_calculator';
+  static const installationVideo = '/installation_video'; 
   static const thermostatApps = '/thermostat_apps';
   static const installationChecklistHub = '/installation_checklist_hub';
   static const heatingMatChecklist = '/heating_mat_checklist';
@@ -140,6 +142,9 @@ class Routes {
 
       case cableSpacingCalculator:
         return MaterialPageRoute(builder: (_) => const CableSpacingCalculatorScreen());
+		
+	  case installationVideo:
+        return MaterialPageRoute(builder: (_) => const InstallationVideoScreen());
 
       case thermostatApps:
         return MaterialPageRoute(builder: (_) => const ThermostatAppsScreen());
