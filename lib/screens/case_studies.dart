@@ -1,4 +1,4 @@
-// case_studies.dart
+// UPDATED case_studies.dart
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,16 +6,17 @@ import 'package:shimmer/shimmer.dart';
 
 import '../routes.dart';
 
+// The CaseStudy model is updated to use local asset paths
 class CaseStudy {
   final String id;
   final String title;
-  final String imageAssetPath;
+  final String imageAssetPath; // UPDATED from imageUrl
   final String summary;
   final List<String> categories;
   final String projectDetails;
   final String challenge;
   final String solution;
-  final String pdfAssetPath;
+  final String pdfAssetPath; // UPDATED from pdfPath
 
   const CaseStudy({
     required this.id,
@@ -30,6 +31,7 @@ class CaseStudy {
   });
 }
 
+// The data is updated to point to local assets for both images and PDFs
 const List<CaseStudy> allCaseStudies = [
   CaseStudy(
     id: "1",
@@ -128,7 +130,7 @@ const List<CaseStudy> allCaseStudies = [
     projectDetails: "This unique renovation project involved converting an iconic Military Westland Lynx Helicopter into holiday accommodation. A heating solution was needed for this 'sky-high' project.",
     challenge: "To provide a cosy interior for the 3.3m² space within the helicopter, which would serve as a self-contained glamping pod. The system needed to be remotely controllable to meet guest's demands.",
     solution: "Heat Mat specified the 150W Combymat System. The heating mats were fitted onto 6mm of foam insulation on top of a plywood base, with a final floor covering of laminate. A WiFi-enabled NGTouch thermostat controls the heating, allowing the owner to adjust it remotely.",
-    pdfAssetPath: "assets/pdfs/CASESTUDIES/CS_Lynx_Helicopter_Email.pdf",
+    pdfAssetPath: "assets/pdfs/CASESTUDIES/CS_Lynx_Helicopter_Email1.pdf",
   ),
   CaseStudy(
     id: "10",
@@ -291,6 +293,7 @@ class _CaseStudiesScreenState extends State<CaseStudiesScreen> {
       ),
       body: Column(
         children: [
+          // Search
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(
@@ -308,6 +311,7 @@ class _CaseStudiesScreenState extends State<CaseStudiesScreen> {
               style: GoogleFonts.raleway(color: Colors.black87),
             ),
           ),
+          // Filter chips
           SizedBox(
             height: 44,
             child: ListView.separated(
@@ -334,6 +338,7 @@ class _CaseStudiesScreenState extends State<CaseStudiesScreen> {
           ),
           const SizedBox(height: 8),
 
+          // List
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -373,9 +378,11 @@ class _CaseStudyCard extends StatelessWidget {
           children: [
             AspectRatio(
               aspectRatio: 16 / 9,
+              // UPDATED: Load image from local assets instead of network
               child: Image.asset(
                 study.imageAssetPath,
                 fit: BoxFit.cover,
+                // The errorBuilder is still useful in case an asset path is wrong
                 errorBuilder: (context, error, stackTrace) {
                   return const _ShimmerPlaceholder();
                 },

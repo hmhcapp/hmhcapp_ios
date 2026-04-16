@@ -14,6 +14,7 @@ const _dark = Color(0xFF333333);
 const _greyBtn = Color(0xFF555555);
 const _warrantyYellow = Color(0xFFF1B227);
 const _quotesOrange = Color(0xFFEFA528);
+const _loyaltyBurgundy = Color(0xFF9F3D2D);
 
 class UserProfileData {
   final String fullName;
@@ -501,6 +502,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
+        SizedBox(
+          height: 50,
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => Navigator.pushNamed(context, Routes.loyaltyScheme),
+            icon: const Icon(Icons.workspace_premium_outlined, color: Colors.white),
+            label: Text('Loyalty Scheme',
+                style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.w600)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _loyaltyBurgundy,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         SizedBox(
           height: 50,
           width: double.infinity,

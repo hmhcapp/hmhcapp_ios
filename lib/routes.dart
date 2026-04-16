@@ -14,7 +14,7 @@ import 'screens/case_study_detail.dart';
 import 'screens/installer_tools.dart';
 import 'screens/floor_diagrams.dart';
 import 'screens/thermostat_apps.dart';
-import 'screens/cable_spacing_calculator.dart';
+import 'screens/cable_spacing_calculator_v3.dart';
 import 'screens/get_a_quote.dart';
 import 'screens/quote_form.dart';
 import 'screens/quote_detail.dart';
@@ -23,6 +23,7 @@ import 'screens/heating_mat_checklist.dart';
 import 'screens/heating_cable_checklist.dart';
 import 'screens/register_warranty.dart';
 import 'screens/installation_video_screen.dart';
+import 'screens/loyalty_scheme_screen_v2.dart';
 
 // Auth
 import 'package:hmhcapp_ios/auth/login_screen.dart';
@@ -70,6 +71,7 @@ class Routes {
   static const caseStudies = '/case_studies';
   static const caseStudyDetail = '/case_study_detail';
   static const registerWarranty = '/register_warranty';
+  static const loyaltyScheme = '/loyalty_scheme';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -222,6 +224,9 @@ class Routes {
       case Routes.registerWarranty:
   final initialTab = (settings.arguments as int?) ?? 0;
   return MaterialPageRoute(builder: (_) => RegisterWarrantyScreen(initialTabIndex: initialTab));
+
+      case loyaltyScheme:
+        return MaterialPageRoute(builder: (_) => const LoyaltySchemeScreen());
 
       default:
         return MaterialPageRoute(builder: (_) => const _Stub('UNKNOWN ROUTE'));
