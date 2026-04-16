@@ -1,4 +1,4 @@
-// case_study_detail.dart
+// UPDATED case_study_detail.dart
 
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -6,14 +6,16 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../utils/file_saver_adapter.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'case_studies.dart';
-import '../widgets/pdf_viewer_screen.dart';
+// --- IMPORT YOUR NEW PDF VIEWER SCREEN ---
+import '../widgets/pdf_viewer_screen.dart'; // Adjust path if needed
 
-/// --- HELPER FUNCTIONS FOR OFFLINE ASSETS ---
+// --- HELPER FUNCTIONS FOR OFFLINE ASSETS ---
 
+/// A helper to copy a bundled asset to a temporary file for sharing.
 Future<File> _copyAssetToTempFile(String assetPath) async {
   final dir = await getTemporaryDirectory();
   final file = File('${dir.path}/${assetPath.split('/').last}');
@@ -25,6 +27,7 @@ Future<File> _copyAssetToTempFile(String assetPath) async {
   return file;
 }
 
+/// Shares the PDF asset.
 Future<void> _shareAsset(BuildContext context, CaseStudy study, void Function(String) toast) async {
   try {
     toast('Preparing to share...');
@@ -35,24 +38,25 @@ Future<void> _shareAsset(BuildContext context, CaseStudy study, void Function(St
   }
 }
 
-// --- THIS IS THE CORRECTED FUNCTION ---
+/// Saves the PDF asset to the device's public "Downloads" folder.
 Future<void> _saveAsset(BuildContext context, CaseStudy study, void Function(String) toast) async {
   try {
     toast('Preparing file...');
     final byteData = await rootBundle.load(study.pdfAssetPath);
     final sanitizedFileName = study.title.replaceAll(RegExp(r'[^\w\s.-]+'), '').replaceAll(' ', '_');
-    
     await FileSaver.instance.saveFile(
       name: sanitizedFileName,
       bytes: byteData.buffer.asUint8List(),
       ext: 'pdf',
       mimeType: MimeType.pdf,
     );
+    toast('File save dialog opened.');
   } catch (e) {
     toast('Save failed: $e');
   }
 }
 
+/// Opens the PDF in the dedicated in-app viewer.
 void _viewAsset(BuildContext context, CaseStudy study) {
   Navigator.push(
     context,
@@ -64,6 +68,7 @@ void _viewAsset(BuildContext context, CaseStudy study) {
     ),
   );
 }
+
 
 class CaseStudyDetailScreen extends StatelessWidget {
   final String? caseStudyId;
@@ -78,18 +83,19 @@ class CaseStudyDetailScreen extends StatelessWidget {
       );
     }
 
+    // Find the study or use a fallback. Note the updated field names.
     final study = allCaseStudies.firstWhere(
       (e) => e.id == caseStudyId,
       orElse: () => const CaseStudy(
         id: 'missing',
         title: 'Case Study Not Found',
-        imageAssetPath: 'assets/images/front_image.jpg',
+        imageAssetPath: 'assets/images/front_image.jpg', // A safe fallback image
         summary: '',
         categories: [],
         projectDetails: 'The requested case study could not be found.',
         challenge: '',
         solution: '',
-        pdfAssetPath: '',
+        pdfAssetPath: '', // No PDF for missing study
       ),
     );
 
@@ -108,6 +114,7 @@ class CaseStudyDetailScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFf89f37),
         foregroundColor: Colors.white,
         actions: [
+          // Only show share button if a valid PDF exists
           if (study.pdfAssetPath.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.share),
@@ -118,6 +125,7 @@ class CaseStudyDetailScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
+          // --- UPDATED to use Image.asset ---
           if (study.imageAssetPath.isNotEmpty)
             AspectRatio(
               aspectRatio: 16 / 9,
@@ -125,6 +133,7 @@ class CaseStudyDetailScreen extends StatelessWidget {
                 study.imageAssetPath,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
+                  // The shimmer placeholder acts as a great error state
                   return _ShimmerPlaceholder();
                 },
               ),
@@ -152,6 +161,7 @@ class CaseStudyDetailScreen extends StatelessWidget {
                   ),
                 const SizedBox(height: 24),
                 
+                // --- UPDATED: New button layout for offline experience ---
                 if (study.pdfAssetPath.isNotEmpty) ...[
                   SizedBox(
                     width: double.infinity,
@@ -209,7 +219,7 @@ class _DetailSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (content.trim().isEmpty) return const SizedBox.shrink();
+    if (content.trim().isEmpty) return const SizedBox.shrink(); // Hide section if no content
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
@@ -235,6 +245,7 @@ class _DetailSection extends StatelessWidget {
   }
 }
 
+// Shimmer placeholder remains unchanged, it's used as the error state for the image
 class _ShimmerPlaceholder extends StatelessWidget {
   const _ShimmerPlaceholder();
 

@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 import 'firebase_options.dart';
 import 'routes.dart';
-import 'package:flutter/services.dart';
-
-import 'auth/login_screen.dart';
-import 'main_home.dart'; // moved HomeScreen into its own file to keep main.dart clean
+import 'auth/auth_gate.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-  } catch (_) {}
+  } catch (e) {
+    // Optionally log error
+  }
 
-  // Global system UI
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,       // Android: .dark == light icons
-    statusBarBrightness: Brightness.light,       // iOS: .light == light content (counter-intuitive)
+    statusBarIconBrightness: Brightness.light,
+    statusBarBrightness: Brightness.light,
     systemNavigationBarColor: Colors.black,
     systemNavigationBarIconBrightness: Brightness.light,
   ));
@@ -53,8 +54,7 @@ class HeatMatApp extends StatelessWidget {
           ),
         ),
       ),
-      // Always open on the Login screen
-      home: const LoginScreen(),
+      home: const AuthGate(),
       onGenerateRoute: Routes.onGenerateRoute,
     );
   }

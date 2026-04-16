@@ -3,18 +3,20 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart'; // Required for rootBundle
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../utils/file_saver_adapter.dart';
+import 'package:file_saver/file_saver.dart'; // Use file_saver for downloads
 
-import '../widgets/pdf_viewer_screen.dart';
+// --- IMPORT YOUR NEW PDF VIEWER SCREEN ---
+import '../widgets/pdf_viewer_screen.dart'; // Adjust path if needed
 
 /// -------------------- MODELS --------------------
 
 class PdfInfo {
   final String name;
+  // --- UPDATED: We now use a local asset path ---
   final String assetPath;
   const PdfInfo(this.name, this.assetPath);
 }
@@ -39,67 +41,71 @@ class CategoryData {
 }
 
 /// -------------------- INSTRUCTIONS DATA --------------------
+// --- UPDATED: All paths are now local asset paths ---
+
 final List<CategoryData> underfloorHeatingInstructionsData = [
   CategoryData("Heating Mats", [
     SubCategoryItem("Heat Mat Pro", [
-      PdfInfo("Heat Mat PKM heating mat instructions", "assets/pdfs/INSTRUCTIONS/PKM/Heat-Mat-PKM-heating-mat-instructions.pdf"),
+      PdfInfo("PKM Heating Mat Instructions", "assets/pdfs/INSTRUCTIONS/PKM/Heat-Mat-PKM-heating-mat-instructions.pdf"),
     ]),
     SubCategoryItem("Heat My Home", [
-      PdfInfo("Heat My Home HMHMAT instructions", "assets/pdfs/INSTRUCTIONS/HMHMAT/Heat-My-Home-HMHMAT-instructions.pdf"),
+      PdfInfo("HMH160W instructions", "assets/pdfs/INSTRUCTIONS/HMHMAT/Heat-My-Home-HMHMAT-instructions.pdf"),
     ]),
   ]),
   CategoryData("Heating Cables", [
     SubCategoryItem("Heat Mat Pro", [
-      PdfInfo("Heat Mat PKC 3mm cable instructions", "assets/pdfs/INSTRUCTIONS/PKC/Heat-Mat-PKC-3mm-cable-instructions.pdf"),
-      PdfInfo("Heat Mat PKC 5mm cable instructions", "assets/pdfs/INSTRUCTIONS/PKC/Heat-Mat-PKC-5mm-cable-instructions.pdf"),
+      PdfInfo("PKC-3.0 instructions", "assets/pdfs/INSTRUCTIONS/PKC/Heat-Mat-PKC-3mm-cable-instructions.pdf"),
+      PdfInfo("PKC-5.0 instructions", "assets/pdfs/INSTRUCTIONS/PKC/Heat-Mat-PKC-5mm-cable-instructions.pdf"),
     ]),
     SubCategoryItem("Heat My Home", [
-      PdfInfo("Heat My Home HMHCAB instructions", "assets/pdfs/INSTRUCTIONS/HMHCAB/Heat-My-Home-HMHCAB-instructions.pdf"),
+      PdfInfo("HMHCAB instructions", "assets/pdfs/INSTRUCTIONS/HMHCAB/Heat-My-Home-HMHCAB-instructions.pdf"),
     ]),
   ]),
   CategoryData("Thermostats", [
-    PdfItem(PdfInfo("Heat Mat HMT5 thermostat instructions", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/HMT5/Heat-Mat-HMT5-thermostat-instructions.pdf")),
-    PdfItem(PdfInfo("Heat My Home HMH200 instructions", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/HMH200/Heat-My-Home-HMH200-instructions.pdf")),
-    PdfItem(PdfInfo("Heat My Home HMH100 instructions", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/HMH100/Heat-My-Home-HMH100-instructions.pdf")),
-    PdfItem(PdfInfo("Heat Mat NGTouch thermostat instructions", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGT/Heat-Mat-NGTouch-thermostat-instructions.pdf")),
-    PdfItem(PdfInfo("Heat Mat NGTouch thermostat user manual", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGT/Heat-Mat-NGTouch-thermostat-user-manual.pdf")),
-    PdfItem(PdfInfo("Heat Mat NGTouch thermostat quick start guide", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGT/Heat-Mat-NGTouch-thermostat-quick-start-guide.pdf")),
-    PdfItem(PdfInfo("Heat Mat NGTouch 3 0 wifi thermostat instructions", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGTWIFI/Heat-Mat-NGTouch-3-0-wifi-thermostat-instructions.pdf")),
-    PdfItem(PdfInfo("Heat Mat NGTouch 3 0 wifi thermostat user manual", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGTWIFI/Heat-Mat-NGTouch-3-0-wifi-thermostat-user-manual.pdf")),
-    PdfItem(PdfInfo("Heat Mat TPS32 thermostat user manual", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/TPS/Heat-Mat-TPS32-thermostat-user-manual.pdf")),
+    PdfItem(PdfInfo("HMT5 instructions", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/HMT5/Heat-Mat-HMT5-thermostat-instructions.pdf")),
+    PdfItem(PdfInfo("HMH200 instructions", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/HMH200/Heat-My-Home-HMH200-instructions.pdf")),
+    PdfItem(PdfInfo("HMH100 instructions", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/HMH100/Heat-My-Home-HMH100-instructions.pdf")),
+    PdfItem(PdfInfo("NGTouch instructions", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGT/Heat-Mat-NGTouch-thermostat-instructions.pdf")),
+    PdfItem(PdfInfo("NGTouch user manual", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGT/Heat-Mat-NGTouch-thermostat-user-manual.pdf")),
+    PdfItem(PdfInfo("NGTouch quick start guide", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGT/Heat-Mat-NGTouch-thermostat-quick-start-guide.pdf")),
+    PdfItem(PdfInfo("NGTWifi instructions", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGTWIFI/Heat-Mat-NGTouch-3-0-wifi-thermostat-instructions.pdf")),
+    PdfItem(PdfInfo("NGTWifi user manual", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/NGTWIFI/Heat-Mat-NGTouch-3-0-wifi-thermostat-user-manual.pdf")),
+    PdfItem(PdfInfo("TPS32 instructions", "assets/pdfs/INSTRUCTIONS/THERMOSTATS/TPS/Heat-Mat-TPS32-thermostat-user-manual.pdf")),
   ]),
 ];
 
 final List<CategoryData> frostProtectionInstructionsData = [
   CategoryData("Pipe Protection Cables", [
     PdfItem(PdfInfo("PipeGuard instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/PipeGuard-instructions.pdf")),
-    PdfItem(PdfInfo("Trace Cable Installation Guide", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/Trace-Cable-Installation-Guide.pdf")),
+    PdfItem(PdfInfo("Trace Heating instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/Trace-Cable-Installation-Guide.pdf")),
   ]),
   CategoryData("Gutter & Roof Heating", [
-    PdfItem(PdfInfo("Heat Mat Ice and Snow Systems Roof Heating Installation Instructions Generic", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/Heat-Mat-Ice-and-Snow-Systems-Roof-Heating-Installation-Instructions-Generic.pdf")),
+    PdfItem(PdfInfo("Roof Heating generic instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/Heat-Mat-Ice-and-Snow-Systems-Roof-Heating-Installation-Instructions-Generic.pdf")),
   ]),
   CategoryData("Driveway & Ramp Heating", [
-    PdfItem(PdfInfo("Driveway Heating Cable Instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/Driveway-Heating-Cable-Instructions.pdf")),
+    PdfItem(PdfInfo("50W Driveway heating cable instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/Driveway-Heating-Cable-Instructions.pdf")),
   ]),
   CategoryData("Controllers & Sensors", [
     SubCategoryItem("Controllers/Thermostats", [
-      PdfInfo("FRO 10A STAT Instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-10A-STAT-Instructions.pdf"),
-      PdfInfo("FRO 16A STAT Instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-16A-STAT-Instructions.pdf"),
-      PdfInfo("FRO 48A STAT Instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-48A-STAT-Instructions.pdf"),
-      PdfInfo("TRA 20A STAT Instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/TRA-20A-STAT-Instructions.pdf"),
+      PdfInfo("FRO-10A-STAT thermostat instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-10A-STAT-Instructions.pdf"),
+      PdfInfo("FRO-16A-STAT thermostat instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-16A-STAT-Instructions.pdf"),
+      PdfInfo("FRO-48A-STAT thermostat instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-48A-STAT-Instructions.pdf"),
+      PdfInfo("TRA-20A-STAT thermostat instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/TRA-20A-STAT-Instructions.pdf"),
     ]),
     SubCategoryItem("Sensors", [
-      PdfInfo("FRO GRO SENS Instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-GRO-SENS-Instructions.pdf"),
-      PdfInfo("FRO GRO TEMP instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-GRO-TEMP-instructions.pdf"),
-      PdfInfo("FRO TEM SENS instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-TEM-SENS-instructions.pdf"),
-      PdfInfo("FRO GUT SENS instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-GUT-SENS-instructions.pdf"),
+      PdfInfo("FRO-GRO-SENS ground sensor instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-GRO-SENS-Instructions.pdf"),
+      PdfInfo("FRO-GRO-TEMP ground/pipe sensor instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-GRO-TEMP-instructions.pdf"),
+      PdfInfo("FRO-TEM-SENS air sensor instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-TEM-SENS-instructions.pdf"),
+      PdfInfo("FRO-GUT-SENS gutter moisture sensor instructions", "assets/pdfs/INSTRUCTIONS/ICEANDSNOW/FRO-GUT-SENS-instructions.pdf"),
     ]),
   ]),
 ];
 
 
 /// -------------------- HELPERS --------------------
+// --- REWRITTEN HELPER FUNCTIONS TO WORK OFFLINE WITH ASSETS ---
 
+/// A helper to copy a bundled asset to a temporary file.
 Future<File> _copyAssetToTempFile(String assetPath) async {
   final dir = await getTemporaryDirectory();
   final file = File('${dir.path}/${assetPath.split('/').last}');
@@ -111,6 +117,7 @@ Future<File> _copyAssetToTempFile(String assetPath) async {
   return file;
 }
 
+/// Shares the PDF by copying it to a temp file first.
 Future<void> shareFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
   try {
     toast('Preparing to share...');
@@ -121,25 +128,26 @@ Future<void> shareFile(BuildContext context, PdfInfo pdf, void Function(String) 
   }
 }
 
-// --- THIS IS THE CORRECTED FUNCTION ---
+/// Saves the PDF to the device's public "Downloads" folder.
 Future<void> downloadFile(BuildContext context, PdfInfo pdf, void Function(String) toast) async {
   try {
     toast('Preparing file...');
     final byteData = await rootBundle.load(pdf.assetPath);
     final Uint8List bytes = byteData.buffer.asUint8List();
     final sanitizedFileName = pdf.name.replaceAll(RegExp(r'[^\w\s.-]+'), '').replaceAll(' ', '_');
-    
     await FileSaver.instance.saveFile(
       name: sanitizedFileName,
       bytes: bytes,
       ext: 'pdf',
       mimeType: MimeType.pdf,
     );
+    toast('File save dialog opened.');
   } catch (e) {
     toast('Save failed: $e');
   }
 }
 
+/// Opens the PDF in the dedicated viewer screen.
 void openPdf(BuildContext context, PdfInfo pdf) {
   Navigator.push(
     context,
@@ -152,7 +160,8 @@ void openPdf(BuildContext context, PdfInfo pdf) {
   );
 }
 
-// ... (The rest of your UI widgets are correct and unchanged) ...
+/// -------------------- REUSABLE UI --------------------
+// ... (Category and SubCategory widgets remain unchanged)
 class Category extends StatelessWidget {
   final String title;
   final bool expanded;
@@ -286,6 +295,8 @@ class PdfLink extends StatelessWidget {
   }
 }
 
+/// -------------------- INSTRUCTIONS SCREEN --------------------
+
 class ProductInstructionsScreen extends StatefulWidget {
   final String categoryTitle;
   final Color appBarColor;
@@ -379,6 +390,7 @@ class _ProductInstructionsScreenState extends State<ProductInstructionsScreen> {
                                           content: () => Column(
                                             children: [
                                               for (final pdf in item.pdfs)
+                                                // --- UPDATED: Pass correct offline functions ---
                                                 PdfLink(
                                                   pdfInfo: pdf,
                                                   onShare: () => shareFile(context, pdf, _toast),
@@ -389,6 +401,7 @@ class _ProductInstructionsScreenState extends State<ProductInstructionsScreen> {
                                           ),
                                         )
                                       else if (item is PdfItem)
+                                        // --- UPDATED: Pass correct offline functions ---
                                         PdfLink(
                                           pdfInfo: item.info,
                                           onShare: () => shareFile(context, item.info, _toast),
@@ -414,6 +427,7 @@ class _ProductInstructionsScreenState extends State<ProductInstructionsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
   
+  // --- Search logic is unchanged and will work correctly ---
   List<CategoryData> _filtered(List<CategoryData> data, String q) {
     final query = q.trim().toLowerCase();
     if (query.isEmpty) return data;
