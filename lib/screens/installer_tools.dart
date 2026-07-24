@@ -35,11 +35,17 @@ class InstallerToolsScreen extends StatelessWidget {
       icon: Icons.calculate_outlined,
       route: Routes.cableSpacingCalculator,
     ),
-	_ToolInfo(
+    _ToolInfo(
+      text: 'Heating Mat Planner',
+      color: Color(0xFFED9828),
+      icon: Icons.design_services_outlined,
+      route: Routes.heatingMatPlanner,
+    ),
+    _ToolInfo(
       text: 'Installation Video',
       color: Color(0xFFE9882A),
       icon: Icons.play_circle_outline,
-      route: Routes.installationVideo, 
+      route: Routes.installationVideo,
     ),
     _ToolInfo(
       text: 'Thermostat Apps',
@@ -60,7 +66,10 @@ class InstallerToolsScreen extends StatelessWidget {
     final gradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Colors.white.withOpacity(0.4), const Color(0xFF333333).withOpacity(0.6)],
+      colors: [
+        Colors.white.withOpacity(0.4),
+        const Color(0xFF333333).withOpacity(0.6),
+      ],
     );
 
     return Scaffold(
@@ -73,7 +82,10 @@ class InstallerToolsScreen extends StatelessWidget {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset('assets/images/diagonalpatternbg.jpg', fit: BoxFit.cover),
+            child: Image.asset(
+              'assets/images/diagonalpatternbg.jpg',
+              fit: BoxFit.cover,
+            ),
           ),
           Positioned.fill(
             child: Container(decoration: BoxDecoration(gradient: gradient)),
@@ -89,22 +101,31 @@ class InstallerToolsScreen extends StatelessWidget {
 
                 // Calculate the total height used by padding and spacing
                 // The last item does not have bottom padding in this calculation
-                final totalSpacing = (verticalPadding * 2) + (spacing * (buttonCount -1));
-                
+                final totalSpacing =
+                    (verticalPadding * 2) + (spacing * (buttonCount - 1));
+
                 // Calculate the height available for each button within the safe area
-                final buttonHeight = (constraints.maxHeight - totalSpacing) / buttonCount;
+                final buttonHeight =
+                    (constraints.maxHeight - totalSpacing) / buttonCount;
 
                 // Use a fallback height in case the calculated height is invalid (e.g., during orientation changes)
-                final safeButtonHeight = buttonHeight > 0 ? buttonHeight : 130.0;
+                final safeButtonHeight = buttonHeight > 0
+                    ? buttonHeight
+                    : 130.0;
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: verticalPadding),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: verticalPadding,
+                  ),
                   itemCount: buttonCount,
                   itemBuilder: (context, index) {
                     final tool = _tools[index];
                     return Padding(
                       // Add spacing below each button except the last one
-                      padding: EdgeInsets.only(bottom: index == buttonCount - 1 ? 0 : spacing),
+                      padding: EdgeInsets.only(
+                        bottom: index == buttonCount - 1 ? 0 : spacing,
+                      ),
                       child: _BigButton(
                         text: tool.text,
                         color: tool.color,
@@ -184,7 +205,9 @@ class __BigButtonState extends State<_BigButton> {
           style: ElevatedButton.styleFrom(
             backgroundColor: widget.color,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             elevation: 4,
             padding: const EdgeInsets.symmetric(horizontal: 24),
           ),
@@ -195,7 +218,10 @@ class __BigButtonState extends State<_BigButton> {
               Expanded(
                 child: Text(
                   widget.text,
-                  style: GoogleFonts.raleway(fontSize: 18, fontWeight: FontWeight.w400),
+                  style: GoogleFonts.raleway(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
             ],

@@ -74,8 +74,9 @@ android {
             // )
         }
         debug {
-            // Leave debug as default; do not use the release keystore here unless you want to.
-            // signingConfig = signingConfigs.getByName("release")
+            // Keep local device testing separate from the Play Store installation.
+            applicationIdSuffix = ".sandbox"
+            versionNameSuffix = "-sandbox"
         }
     }
 }

@@ -12,6 +12,7 @@ import 'screens/instruction_category_selection.dart';
 import 'screens/case_studies.dart';
 import 'screens/case_study_detail.dart';
 import 'screens/installer_tools.dart';
+import 'screens/heating_mat_planner.dart';
 import 'screens/floor_diagrams.dart';
 import 'screens/thermostat_apps.dart';
 import 'screens/cable_spacing_calculator_v3.dart';
@@ -41,19 +42,24 @@ class Routes {
 
   // Factsheets
   static const productCategorySelection = '/product_category_selection';
-  static const underfloorHeatingFactsheetsRoute = '/underfloor_heating_factsheets';
+  static const underfloorHeatingFactsheetsRoute =
+      '/underfloor_heating_factsheets';
   static const frostProtectionFactsheetsRoute = '/frost_protection_factsheets';
 
   // Instructions
-  static const productInstructionCategorySelection = '/product_instruction_category_selection';
-  static const underfloorHeatingInstructionsRoute = '/underfloor_heating_instructions';
-  static const frostProtectionInstructionsRoute = '/frost_protection_instructions';
+  static const productInstructionCategorySelection =
+      '/product_instruction_category_selection';
+  static const underfloorHeatingInstructionsRoute =
+      '/underfloor_heating_instructions';
+  static const frostProtectionInstructionsRoute =
+      '/frost_protection_instructions';
 
   // Installer Tools + subpages
   static const installerTools = '/installer_tools';
+  static const heatingMatPlanner = '/heating_mat_planner';
   static const floorDiagrams = '/floor_diagrams';
   static const cableSpacingCalculator = '/cable_spacing_calculator';
-  static const installationVideo = '/installation_video'; 
+  static const installationVideo = '/installation_video';
   static const thermostatApps = '/thermostat_apps';
   static const installationChecklistHub = '/installation_checklist_hub';
   static const heatingMatChecklist = '/heating_mat_checklist';
@@ -93,14 +99,17 @@ class Routes {
 
       // --- Factsheets ---
       case productCategorySelection:
-        return MaterialPageRoute(builder: (_) => const ProductCategorySelectionScreen());
+        return MaterialPageRoute(
+          builder: (_) => const ProductCategorySelectionScreen(),
+        );
 
       case underfloorHeatingFactsheetsRoute:
         return MaterialPageRoute(
           builder: (_) => ProductFactsheetsScreen(
             categoryTitle: 'Underfloor Heating Factsheets',
             appBarColor: const Color(0xFFDD4F2E),
-            factsheetData: underfloorHeatingFactsheetsData, // keep your existing data source
+            factsheetData:
+                underfloorHeatingFactsheetsData, // keep your existing data source
           ),
         );
 
@@ -115,7 +124,9 @@ class Routes {
 
       // --- Instructions ---
       case productInstructionCategorySelection:
-        return MaterialPageRoute(builder: (_) => const InstructionCategorySelectionScreen());
+        return MaterialPageRoute(
+          builder: (_) => const InstructionCategorySelectionScreen(),
+        );
 
       case underfloorHeatingInstructionsRoute:
         return MaterialPageRoute(
@@ -139,26 +150,41 @@ class Routes {
       case installerTools:
         return MaterialPageRoute(builder: (_) => const InstallerToolsScreen());
 
+      case heatingMatPlanner:
+        return MaterialPageRoute(
+          builder: (_) => const HeatingMatPlannerScreen(),
+        );
+
       case floorDiagrams:
         return MaterialPageRoute(builder: (_) => const FloorDiagramsScreen());
 
       case cableSpacingCalculator:
-        return MaterialPageRoute(builder: (_) => const CableSpacingCalculatorScreen());
-		
-	  case installationVideo:
-        return MaterialPageRoute(builder: (_) => const InstallationVideoScreen());
+        return MaterialPageRoute(
+          builder: (_) => const CableSpacingCalculatorScreen(),
+        );
+
+      case installationVideo:
+        return MaterialPageRoute(
+          builder: (_) => const InstallationVideoScreen(),
+        );
 
       case thermostatApps:
         return MaterialPageRoute(builder: (_) => const ThermostatAppsScreen());
 
       case installationChecklistHub:
-        return MaterialPageRoute(builder: (_) => const InstallationChecklistHubScreen());
+        return MaterialPageRoute(
+          builder: (_) => const InstallationChecklistHubScreen(),
+        );
 
       case heatingMatChecklist:
-        return MaterialPageRoute(builder: (_) => const HeatingMatChecklistScreen());
+        return MaterialPageRoute(
+          builder: (_) => const HeatingMatChecklistScreen(),
+        );
 
       case heatingCableChecklist:
-        return MaterialPageRoute(builder: (_) => const HeatingCableChecklistScreen());
+        return MaterialPageRoute(
+          builder: (_) => const HeatingCableChecklistScreen(),
+        );
 
       // --- Get a Quote hub (tabs) ---
       case getAQuoteCategorySelection:
@@ -218,12 +244,16 @@ class Routes {
 
       case caseStudyDetail:
         final id = settings.arguments as String?;
-        return MaterialPageRoute(builder: (_) => CaseStudyDetailScreen(caseStudyId: id));
+        return MaterialPageRoute(
+          builder: (_) => CaseStudyDetailScreen(caseStudyId: id),
+        );
 
       // --- Register Warranty ---
       case Routes.registerWarranty:
-  final initialTab = (settings.arguments as int?) ?? 0;
-  return MaterialPageRoute(builder: (_) => RegisterWarrantyScreen(initialTabIndex: initialTab));
+        final initialTab = (settings.arguments as int?) ?? 0;
+        return MaterialPageRoute(
+          builder: (_) => RegisterWarrantyScreen(initialTabIndex: initialTab),
+        );
 
       case loyaltyScheme:
         return MaterialPageRoute(builder: (_) => const LoyaltySchemeScreen());
