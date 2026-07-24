@@ -43,7 +43,7 @@ android {
     defaultConfig {
         applicationId = "com.collection.hmhcapp"
         minSdk = flutter.minSdkVersion
-        targetSdk = 35
+        targetSdk = 36
         // These are sourced from pubspec's version: x.y.z+build, unless you override.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
