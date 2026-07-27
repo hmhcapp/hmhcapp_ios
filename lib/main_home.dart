@@ -153,26 +153,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ? 'Notifications are enabled and connected.'
               : NotificationService.instance.notificationsEnabled.value
               ? 'Permission is enabled, but notification setup has not '
-                    'finished. Tap the bell to retry.'
+                    'finished. Close and reopen the app to retry.'
               : 'Notifications were not enabled. You can change this in your '
                     'phone settings.',
-        ),
-      ),
-    );
-  }
-
-  Future<void> _retryNotificationConnection() async {
-    final connected = await NotificationService.instance
-        .ensureBroadcastSubscription();
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          connected
-              ? 'Notifications are connected.'
-              : 'Unable to connect notifications yet. Check your internet '
-                    'connection and try again.',
         ),
       ),
     );
@@ -310,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Positioned(
               top: statusBar + 30,
-              right: 8,
+              right: 16,
               child: StreamBuilder<User?>(
                 stream: FirebaseAuth.instance.authStateChanges(),
                 builder: (context, snap) {
@@ -335,39 +318,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 },
-              ),
-            ),
-            Positioned(
-              top: statusBar + 30,
-              right: 104,
-              child: ValueListenableBuilder<bool>(
-                valueListenable:
-                    NotificationService.instance.notificationsEnabled,
-                builder: (context, permissionEnabled, _) =>
-                    ValueListenableBuilder<bool>(
-                      valueListenable:
-                          NotificationService.instance.broadcastsReady,
-                      builder: (context, connected, _) => IconButton(
-                        tooltip: connected
-                            ? 'Notifications connected'
-                            : permissionEnabled
-                            ? 'Finish connecting notifications'
-                            : 'Enable notifications',
-                        onPressed: connected
-                            ? null
-                            : permissionEnabled
-                            ? _retryNotificationConnection
-                            : _requestNotificationPermission,
-                        icon: Icon(
-                          connected
-                              ? Icons.notifications_active
-                              : permissionEnabled
-                              ? Icons.sync
-                              : Icons.notifications_none,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
               ),
             ),
           ],

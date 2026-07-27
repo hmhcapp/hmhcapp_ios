@@ -21,7 +21,6 @@ class NotificationService {
   static final instance = NotificationService._();
 
   final ValueNotifier<bool> notificationsEnabled = ValueNotifier(false);
-  final ValueNotifier<bool> broadcastsReady = ValueNotifier(false);
 
   GlobalKey<NavigatorState>? _navigatorKey;
   GlobalKey<ScaffoldMessengerState>? _messengerKey;
@@ -85,18 +84,11 @@ class NotificationService {
         return await _subscribeToBroadcasts();
       }
 
-      broadcastsReady.value = false;
       return false;
     } catch (_) {
       notificationsEnabled.value = false;
-      broadcastsReady.value = false;
       return false;
     }
-  }
-
-  Future<bool> ensureBroadcastSubscription() async {
-    if (!notificationsEnabled.value) return false;
-    return _subscribeToBroadcasts();
   }
 
   void handlePendingLaunchMessage() {
@@ -149,7 +141,6 @@ class NotificationService {
         final fcmToken = await messaging.getToken();
         if (fcmToken != null && fcmToken.isNotEmpty) {
           await messaging.subscribeToTopic(_broadcastTopic);
-          broadcastsReady.value = true;
           return true;
         }
       } catch (_) {
@@ -159,7 +150,6 @@ class NotificationService {
       await Future<void>.delayed(Duration(seconds: attempt + 1));
     }
 
-    broadcastsReady.value = false;
     return false;
   }
 
@@ -202,6 +192,5 @@ class NotificationService {
   void dispose() {
     _tokenSubscription?.cancel();
     notificationsEnabled.dispose();
-    broadcastsReady.dispose();
   }
 }
