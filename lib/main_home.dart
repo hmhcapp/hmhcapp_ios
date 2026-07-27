@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'routes.dart';
+import 'services/notification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,20 +17,46 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _animate = false;
+  static const _plannerAnnouncementKey =
+      'announcement_heating_mat_planner_2026';
 
   static const _tileData = <_Tile>[
-    _Tile('PRODUCT FACTSHEETS', Icons.description_outlined,
-        Routes.productCategorySelection, Color(0xFFDD4F2E)),
-    _Tile('PRODUCT INSTRUCTIONS', Icons.menu_book_outlined,
-        Routes.productInstructionCategorySelection, Color(0xFFE26A2D)),
-    _Tile('CASE STUDIES', Icons.library_books_outlined,
-        Routes.caseStudies, Color(0xFFE88A2B)),
-    _Tile('GET A QUOTE', Icons.edit_note_outlined,
-        Routes.getAQuoteCategorySelection, Color(0xFFEFA528)),
-    _Tile('REGISTER WARRANTY', Icons.workspace_premium_outlined,
-        Routes.registerWarranty, Color(0xFFF1B227)),
-    _Tile('INSTALLER TOOLS', Icons.build_outlined,
-        Routes.installerTools, Color(0xFFF4BE25)),
+    _Tile(
+      'PRODUCT FACTSHEETS',
+      Icons.description_outlined,
+      Routes.productCategorySelection,
+      Color(0xFFDD4F2E),
+    ),
+    _Tile(
+      'PRODUCT INSTRUCTIONS',
+      Icons.menu_book_outlined,
+      Routes.productInstructionCategorySelection,
+      Color(0xFFE26A2D),
+    ),
+    _Tile(
+      'CASE STUDIES',
+      Icons.library_books_outlined,
+      Routes.caseStudies,
+      Color(0xFFE88A2B),
+    ),
+    _Tile(
+      'GET A QUOTE',
+      Icons.edit_note_outlined,
+      Routes.getAQuoteCategorySelection,
+      Color(0xFFEFA528),
+    ),
+    _Tile(
+      'REGISTER WARRANTY',
+      Icons.workspace_premium_outlined,
+      Routes.registerWarranty,
+      Color(0xFFF1B227),
+    ),
+    _Tile(
+      'INSTALLER TOOLS',
+      Icons.build_outlined,
+      Routes.installerTools,
+      Color(0xFFF4BE25),
+    ),
   ];
 
   @override
@@ -42,6 +70,92 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showPlannerAnnouncementIfNeeded();
+      NotificationService.instance.handlePendingLaunchMessage();
+    });
+  }
+
+  Future<void> _showPlannerAnnouncementIfNeeded() async {
+    final preferences = await SharedPreferences.getInstance();
+    if (preferences.getBool(_plannerAnnouncementKey) ?? false) return;
+    if (!mounted) return;
+
+    final action = await showDialog<_AnnouncementAction>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(
+          Icons.grid_view_rounded,
+          size: 42,
+          color: Color(0xFFDD4F2E),
+        ),
+        title: const Text(
+          'New: Heating Mat Planner',
+          textAlign: TextAlign.center,
+        ),
+        content: const Text(
+          'Create a professional heating mat plan directly in Installer '
+          'Tools, then save or share the finished PDF.\n\n'
+          'You can also enable notifications for future app updates and '
+          'important Heat Mat news.',
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          TextButton(
+            onPressed: () =>
+                Navigator.pop(dialogContext, _AnnouncementAction.dismiss),
+            child: const Text('LATER'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(
+              dialogContext,
+              _AnnouncementAction.enableNotifications,
+            ),
+            child: const Text('ENABLE NOTIFICATIONS'),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.pop(dialogContext, _AnnouncementAction.openPlanner),
+            child: const Text('TRY PLANNER'),
+          ),
+        ],
+      ),
+    );
+
+    await preferences.setBool(_plannerAnnouncementKey, true);
+    if (!mounted) return;
+
+    switch (action) {
+      case _AnnouncementAction.enableNotifications:
+        await _requestNotificationPermission();
+        break;
+      case _AnnouncementAction.openPlanner:
+        if (mounted) {
+          Navigator.pushNamed(context, Routes.heatingMatPlanner);
+        }
+        break;
+      case _AnnouncementAction.dismiss:
+      case null:
+        break;
+    }
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    final allowed = await NotificationService.instance.requestPermission();
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          allowed
+              ? 'Notifications are enabled.'
+              : 'Notifications were not enabled. You can change this in your '
+                    'phone settings.',
+        ),
+      ),
+    );
   }
 
   @override
@@ -56,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const SystemUiOverlayStyle whiteSystemUI = SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light, // Light icons for Android
-      statusBarBrightness: Brightness.light,    // Light icons for iOS
+      statusBarBrightness: Brightness.light, // Light icons for iOS
     );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -106,12 +220,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           _animate ? 0 : -heroH, // Start above the screen
                           0,
                         ),
-                        child: Image.asset('assets/images/front_image.jpg', fit: BoxFit.cover),
+                        child: Image.asset(
+                          'assets/images/front_image.jpg',
+                          fit: BoxFit.cover,
+                        ),
                       ),
                       // Animated Logo
                       AnimatedPositioned(
                         duration: const Duration(milliseconds: 450),
-                        left: _animate ? 16 : -200, // Start off-screen to the left
+                        left: _animate
+                            ? 16
+                            : -200, // Start off-screen to the left
                         top: statusBar + 16,
                         child: Image.asset(
                           'assets/images/logo.png',
@@ -151,12 +270,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: EdgeInsets.zero,
                       primary: false,
                       itemCount: _tileData.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                        childAspectRatio: 1,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 10,
+                            crossAxisSpacing: 10,
+                            childAspectRatio: 1,
+                          ),
                       itemBuilder: (_, i) => _MenuCard(
                         tile: _tileData[i],
                         index: i,
@@ -170,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Positioned(
               top: statusBar + 30,
-              right: 16,
+              right: 8,
               child: StreamBuilder<User?>(
                 stream: FirebaseAuth.instance.authStateChanges(),
                 builder: (context, snap) {
@@ -195,6 +315,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 },
+              ),
+            ),
+            Positioned(
+              top: statusBar + 30,
+              right: 104,
+              child: ValueListenableBuilder<bool>(
+                valueListenable:
+                    NotificationService.instance.notificationsEnabled,
+                builder: (context, enabled, _) => IconButton(
+                  tooltip: enabled
+                      ? 'Notifications enabled'
+                      : 'Enable notifications',
+                  onPressed: enabled ? null : _requestNotificationPermission,
+                  icon: Icon(
+                    enabled
+                        ? Icons.notifications_active
+                        : Icons.notifications_none,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ],
@@ -252,7 +392,6 @@ class __MenuCardState extends State<_MenuCard> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final isLeft = widget.index % 2 == 0;
@@ -285,7 +424,11 @@ class __MenuCardState extends State<_MenuCard> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(widget.tile.icon, size: 48, color: Colors.white.withOpacity(0.8)),
+                Icon(
+                  widget.tile.icon,
+                  size: 48,
+                  color: Colors.white.withOpacity(0.8),
+                ),
                 const SizedBox(height: 14),
                 Text(
                   widget.tile.title,
@@ -305,3 +448,5 @@ class __MenuCardState extends State<_MenuCard> {
     );
   }
 }
+
+enum _AnnouncementAction { dismiss, enableNotifications, openPlanner }
