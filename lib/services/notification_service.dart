@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../firebase_options.dart';
@@ -20,11 +21,13 @@ class NotificationService {
   static final instance = NotificationService._();
 
   final ValueNotifier<bool> notificationsEnabled = ValueNotifier(false);
+  final ValueNotifier<bool> broadcastsReady = ValueNotifier(false);
 
   GlobalKey<NavigatorState>? _navigatorKey;
   GlobalKey<ScaffoldMessengerState>? _messengerKey;
   StreamSubscription<String>? _tokenSubscription;
   RemoteMessage? _pendingInitialMessage;
+  Future<bool>? _subscriptionTask;
 
   static const _allowedRoutes = <String>{
     Routes.home,
@@ -59,7 +62,7 @@ class NotificationService {
     notificationsEnabled.value = _isAllowed(settings.authorizationStatus);
 
     if (notificationsEnabled.value) {
-      await _subscribeToBroadcasts();
+      unawaited(_subscribeToBroadcasts());
     }
 
     _pendingInitialMessage = await FirebaseMessaging.instance
@@ -79,14 +82,21 @@ class NotificationService {
       notificationsEnabled.value = allowed;
 
       if (allowed) {
-        await _subscribeToBroadcasts();
+        return await _subscribeToBroadcasts();
       }
 
-      return allowed;
+      broadcastsReady.value = false;
+      return false;
     } catch (_) {
       notificationsEnabled.value = false;
+      broadcastsReady.value = false;
       return false;
     }
+  }
+
+  Future<bool> ensureBroadcastSubscription() async {
+    if (!notificationsEnabled.value) return false;
+    return _subscribeToBroadcasts();
   }
 
   void handlePendingLaunchMessage() {
@@ -97,13 +107,60 @@ class NotificationService {
     _openMessage(message);
   }
 
-  Future<void> _subscribeToBroadcasts() async {
-    try {
-      await FirebaseMessaging.instance.subscribeToTopic(_broadcastTopic);
-    } catch (_) {
-      // APNs can still be registering on a fresh iOS install. The token
-      // refresh listener retries the subscription as soon as it is ready.
+  Future<bool> _subscribeToBroadcasts() {
+    final existingTask = _subscriptionTask;
+    if (existingTask != null) return existingTask;
+
+    final task = _performBroadcastSubscription();
+    _subscriptionTask = task;
+    return task.whenComplete(() {
+      if (identical(_subscriptionTask, task)) {
+        _subscriptionTask = null;
+      }
+    });
+  }
+
+  Future<bool> _performBroadcastSubscription() async {
+    final messaging = FirebaseMessaging.instance;
+
+    if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
+      String? apnsToken;
+
+      // Apple can return notification permission before it supplies the APNs
+      // token. FCM calls made during that gap fail, so wait explicitly.
+      for (var attempt = 0; attempt < 20; attempt++) {
+        try {
+          apnsToken = await messaging.getAPNSToken();
+        } catch (_) {
+          // Retry transient native registration errors below.
+        }
+
+        if (apnsToken != null && apnsToken.isNotEmpty) break;
+        await Future<void>.delayed(const Duration(seconds: 1));
+      }
+
+      if (apnsToken == null || apnsToken.isEmpty) return false;
     }
+
+    for (var attempt = 0; attempt < 5; attempt++) {
+      try {
+        // Topic subscription requires an existing FCM registration token.
+        final fcmToken = await messaging.getToken();
+        if (fcmToken != null && fcmToken.isNotEmpty) {
+          await messaging.subscribeToTopic(_broadcastTopic);
+          broadcastsReady.value = true;
+          return true;
+        }
+      } catch (_) {
+        // Retry below with a short backoff.
+      }
+
+      await Future<void>.delayed(Duration(seconds: attempt + 1));
+    }
+
+    broadcastsReady.value = false;
+    return false;
   }
 
   void _showForegroundMessage(RemoteMessage message) {
@@ -145,5 +202,6 @@ class NotificationService {
   void dispose() {
     _tokenSubscription?.cancel();
     notificationsEnabled.dispose();
+    broadcastsReady.dispose();
   }
 }

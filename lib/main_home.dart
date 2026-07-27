@@ -143,16 +143,36 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _requestNotificationPermission() async {
-    final allowed = await NotificationService.instance.requestPermission();
+    final connected = await NotificationService.instance.requestPermission();
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          allowed
-              ? 'Notifications are enabled.'
+          connected
+              ? 'Notifications are enabled and connected.'
+              : NotificationService.instance.notificationsEnabled.value
+              ? 'Permission is enabled, but notification setup has not '
+                    'finished. Tap the bell to retry.'
               : 'Notifications were not enabled. You can change this in your '
                     'phone settings.',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _retryNotificationConnection() async {
+    final connected = await NotificationService.instance
+        .ensureBroadcastSubscription();
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          connected
+              ? 'Notifications are connected.'
+              : 'Unable to connect notifications yet. Check your internet '
+                    'connection and try again.',
         ),
       ),
     );
@@ -323,18 +343,31 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ValueListenableBuilder<bool>(
                 valueListenable:
                     NotificationService.instance.notificationsEnabled,
-                builder: (context, enabled, _) => IconButton(
-                  tooltip: enabled
-                      ? 'Notifications enabled'
-                      : 'Enable notifications',
-                  onPressed: enabled ? null : _requestNotificationPermission,
-                  icon: Icon(
-                    enabled
-                        ? Icons.notifications_active
-                        : Icons.notifications_none,
-                    color: Colors.white,
-                  ),
-                ),
+                builder: (context, permissionEnabled, _) =>
+                    ValueListenableBuilder<bool>(
+                      valueListenable:
+                          NotificationService.instance.broadcastsReady,
+                      builder: (context, connected, _) => IconButton(
+                        tooltip: connected
+                            ? 'Notifications connected'
+                            : permissionEnabled
+                            ? 'Finish connecting notifications'
+                            : 'Enable notifications',
+                        onPressed: connected
+                            ? null
+                            : permissionEnabled
+                            ? _retryNotificationConnection
+                            : _requestNotificationPermission,
+                        icon: Icon(
+                          connected
+                              ? Icons.notifications_active
+                              : permissionEnabled
+                              ? Icons.sync
+                              : Icons.notifications_none,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
               ),
             ),
           ],
