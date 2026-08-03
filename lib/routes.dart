@@ -14,6 +14,7 @@ import 'screens/case_study_detail.dart';
 import 'screens/installer_tools.dart';
 import 'screens/heating_mat_planner.dart';
 import 'screens/floor_diagrams.dart';
+import 'screens/floor_sensor_calculator.dart';
 import 'screens/thermostat_apps.dart';
 import 'screens/cable_spacing_calculator_v3.dart';
 import 'screens/get_a_quote.dart';
@@ -58,6 +59,7 @@ class Routes {
   static const installerTools = '/installer_tools';
   static const heatingMatPlanner = '/heating_mat_planner';
   static const floorDiagrams = '/floor_diagrams';
+  static const floorSensorCalculator = '/floor_sensor_calculator';
   static const cableSpacingCalculator = '/cable_spacing_calculator';
   static const installationVideo = '/installation_video';
   static const thermostatApps = '/thermostat_apps';
@@ -157,6 +159,11 @@ class Routes {
 
       case floorDiagrams:
         return MaterialPageRoute(builder: (_) => const FloorDiagramsScreen());
+
+      case floorSensorCalculator:
+        return MaterialPageRoute(
+          builder: (_) => const FloorSensorCalculatorScreen(),
+        );
 
       case cableSpacingCalculator:
         return MaterialPageRoute(

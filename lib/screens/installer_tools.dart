@@ -36,8 +36,14 @@ class InstallerToolsScreen extends StatelessWidget {
       route: Routes.cableSpacingCalculator,
     ),
     _ToolInfo(
-      text: 'Heating Mat Planner',
+      text: 'Floor Sensor Calculator',
       color: Color(0xFFED9828),
+      icon: Icons.device_thermostat_outlined,
+      route: Routes.floorSensorCalculator,
+    ),
+    _ToolInfo(
+      text: 'Heating Mat Planner',
+      color: Color(0xFFEB9029),
       icon: Icons.design_services_outlined,
       route: Routes.heatingMatPlanner,
     ),
@@ -109,9 +115,9 @@ class InstallerToolsScreen extends StatelessWidget {
                     (constraints.maxHeight - totalSpacing) / buttonCount;
 
                 // Use a fallback height in case the calculated height is invalid (e.g., during orientation changes)
-                final safeButtonHeight = buttonHeight > 0
-                    ? buttonHeight
-                    : 130.0;
+                // Keep tiles comfortably tappable. If they no longer all fit,
+                // the ListView naturally scrolls instead of shrinking them.
+                final safeButtonHeight = buttonHeight.clamp(88.0, 130.0);
 
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(

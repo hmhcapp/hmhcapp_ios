@@ -6,11 +6,10 @@ void main() {
   testWidgets('Installer Tools includes the Heating Mat Planner', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(
-      const MaterialApp(home: InstallerToolsScreen()),
-    );
+    await tester.pumpWidget(const MaterialApp(home: InstallerToolsScreen()));
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Heating Mat Planner'), findsOneWidget);
+    expect(find.text('Floor Sensor Calculator'), findsOneWidget);
   });
 }
