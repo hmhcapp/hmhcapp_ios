@@ -268,7 +268,7 @@ class _FloorSensorCalculatorScreenState
                 ),
                 icon: const Icon(Icons.calculate_outlined),
                 label: Text(
-                  'Calculate resistance table',
+                  'Calculate',
                   style: GoogleFonts.raleway(fontWeight: FontWeight.w700),
                 ),
               ),

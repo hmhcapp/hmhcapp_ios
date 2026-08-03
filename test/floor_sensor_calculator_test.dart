@@ -79,6 +79,37 @@ void main() {
     expect(find.text('Resistance curve'), findsOneWidget);
   });
 
+  testWidgets('a second calculation replaces the existing lookup values', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: FloorSensorCalculatorScreen()),
+    );
+
+    final resistanceField = find.byKey(const Key('sensorResistanceField'));
+    final temperatureField = find.byKey(const Key('sensorTemperatureField'));
+    final calculateButton = find.byKey(
+      const Key('calculateSensorLookupButton'),
+    );
+
+    await tester.enterText(resistanceField, '10000');
+    await tester.enterText(temperatureField, '25');
+    await tester.ensureVisible(calculateButton);
+    await tester.tap(calculateButton);
+    await tester.pumpAndSettle();
+    expect(find.text('24,697 Ω'), findsOneWidget);
+
+    await tester.ensureVisible(resistanceField);
+    await tester.enterText(resistanceField, '12000');
+    await tester.enterText(temperatureField, '25');
+    await tester.ensureVisible(calculateButton);
+    await tester.tap(calculateButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('24,697 Ω'), findsNothing);
+    expect(find.text('29,637 Ω'), findsOneWidget);
+  });
+
   testWidgets('calculator validates missing measurements', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(home: FloorSensorCalculatorScreen()),
