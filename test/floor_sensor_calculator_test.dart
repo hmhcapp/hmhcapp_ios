@@ -77,6 +77,12 @@ void main() {
     await tester.drag(find.byType(ListView), const Offset(0, -1200));
     await tester.pumpAndSettle();
     expect(find.text('Resistance curve'), findsOneWidget);
+    expect(find.text('Tap a dot to view its exact value.'), findsOneWidget);
+
+    final chart = find.byKey(const Key('sensorResistanceChart'));
+    await tester.tapAt(tester.getCenter(chart));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('selectedSensorChartValue')), findsOneWidget);
   });
 
   testWidgets('a second calculation replaces the existing lookup values', (
