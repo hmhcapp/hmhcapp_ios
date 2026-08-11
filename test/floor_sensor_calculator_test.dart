@@ -50,6 +50,11 @@ void main() {
       const MaterialApp(home: FloorSensorCalculatorScreen()),
     );
 
+    expect(
+      find.text("An NTC sensor's kΩ rating is its resistance at 25°C."),
+      findsOneWidget,
+    );
+
     await tester.enterText(
       find.byKey(const Key('sensorResistanceField')),
       '10000',

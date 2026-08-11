@@ -1,9 +1,9 @@
 // lib/auth/register_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter/services.dart';
 import '../routes.dart';
 import 'auth_service.dart';
+import 'auth_dark_shell.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -36,140 +36,134 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final statusBar = MediaQuery.of(context).padding.top;
-
     return Scaffold(
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent),
-        child: Stack(
-          children: [
-            // content
-            Column(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          AuthDarkShell(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Hero image + logo
-                SizedBox(
-                  height: (200.0 + statusBar).clamp(150.0, 260.0),
-                  width: double.infinity,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.asset('assets/images/front_image.jpg', fit: BoxFit.cover),
-                      Positioned(
-                        left: 16,
-                        top: statusBar + 16,
-                        child: Image.asset(
-                          'assets/images/logo.png',
-                          height: 80,
-                          width: 150,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 28),
+                Text(
+                  'Create Account',
+                  style: GoogleFonts.raleway(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
                   ),
                 ),
-
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 24),
-                        Text('Create Account',
-                            style: GoogleFonts.raleway(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF333333),
-                            )),
-                        const SizedBox(height: 16),
-
-                        _outlined('Full Name', onChanged: (v) => fullName = v),
-                        const SizedBox(height: 12),
-                        _outlined('Company Name', onChanged: (v) => companyName = v),
-                        const SizedBox(height: 12),
-                        _outlined('Phone Number',
-                            onChanged: (v) => phoneNumber = v,
-                            keyboardType: TextInputType.phone),
-                        const SizedBox(height: 12),
-                        _outlined('Email',
-                            onChanged: (v) => email = v,
-                            keyboardType: TextInputType.emailAddress),
-                        const SizedBox(height: 12),
-                        _outlined('Password',
-                            onChanged: (v) => password = v, obscure: true),
-                        const SizedBox(height: 12),
-                        _outlined('Confirm Password',
-                            onChanged: (v) => confirmPassword = v,
-                            obscure: true,
-                            isError: confirmPassword.isNotEmpty && confirmPassword != password),
-                        const SizedBox(height: 12),
-
-                        // Terms
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: termsAccepted,
-                              onChanged: (v) => setState(() => termsAccepted = v ?? false),
-                              activeColor: const Color(0xFFDD4F2E),
-                            ),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: InkWell(
-                                onTap: () => setState(() => showTerms = true),
-                                child: Text(
-                                  'I agree to the Terms and Conditions',
-                                  style: GoogleFonts.raleway(
-                                    color: const Color(0xFFDD4F2E),
-                                    fontWeight: FontWeight.w600,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Register button
-                        SizedBox(
-                          height: 50,
-                          width: double.infinity,
-                          child: FilledButton(
-                            onPressed: (!formValid || loading) ? null : _submit,
-                            style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFFDD4F2E),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            child: loading
-                                ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                  )
-                                : Text('Register', style: GoogleFonts.raleway(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 16),
+                _outlined('Full Name', onChanged: (v) => fullName = v),
+                const SizedBox(height: 12),
+                _outlined('Company Name', onChanged: (v) => companyName = v),
+                const SizedBox(height: 12),
+                _outlined(
+                  'Phone Number',
+                  onChanged: (v) => phoneNumber = v,
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 12),
+                _outlined(
+                  'Email',
+                  onChanged: (v) => email = v,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 12),
+                _outlined(
+                  'Password',
+                  onChanged: (v) => password = v,
+                  obscure: true,
+                ),
+                const SizedBox(height: 12),
+                _outlined(
+                  'Confirm Password',
+                  onChanged: (v) => confirmPassword = v,
+                  obscure: true,
+                  isError:
+                      confirmPassword.isNotEmpty && confirmPassword != password,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: termsAccepted,
+                      onChanged: (v) =>
+                          setState(() => termsAccepted = v ?? false),
+                      activeColor: authOrange,
+                      side: authSubtleBorder,
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: InkWell(
+                        onTap: () => setState(() => showTerms = true),
+                        child: Text(
+                          'I agree to the Terms and Conditions',
+                          style: GoogleFonts.raleway(
+                            color: authOrange,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                            decorationColor: authOrange,
                           ),
                         ),
-                        if (errorMessage != null) ...[
-                          const SizedBox(height: 12),
-                          Text(errorMessage!, style: GoogleFonts.raleway(color: const Color(0xFFC00000))),
-                        ],
-                        const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text('Already have an account? Sign in', style: GoogleFonts.raleway(color: const Color(0xFF333333))),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
+                      ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 50,
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: (!formValid || loading) ? null : _submit,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: authOrange,
+                      foregroundColor: Colors.white,
+                      side: authSubtleBorder,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: loading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            'Register',
+                            style: GoogleFonts.raleway(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                   ),
                 ),
+                if (errorMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    errorMessage!,
+                    style: GoogleFonts.raleway(color: const Color(0xFFFF8A80)),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Already have an account? Sign in',
+                    style: GoogleFonts.raleway(color: const Color(0xFFD0D0D0)),
+                  ),
+                ),
+                const SizedBox(height: 24),
               ],
             ),
-
-            if (showTerms) _TermsDialog(onClose: () => setState(() => showTerms = false)),
-          ],
-        ),
+          ),
+          if (showTerms)
+            _TermsDialog(onClose: () => setState(() => showTerms = false)),
+        ],
       ),
     );
   }
@@ -190,7 +184,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (!mounted) return;
       // Go straight to Profile so user can see their details
-      Navigator.of(context).pushNamedAndRemoveUntil(Routes.profile, (r) => false);
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(Routes.profile, (r) => false);
     } catch (e) {
       setState(() => errorMessage = e.toString());
     } finally {
@@ -209,14 +205,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       onChanged: onChanged,
       obscureText: obscure,
       keyboardType: keyboardType,
-      style: GoogleFonts.raleway(color: const Color(0xFF333333)),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: GoogleFonts.raleway(color: Colors.black54),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFDD4F2E)),
-        ),
-        border: const OutlineInputBorder(),
+      cursorColor: authOrange,
+      style: GoogleFonts.raleway(color: Colors.white),
+      decoration: authFieldDecoration(
+        label: label,
         errorText: isError ? 'Passwords do not match' : null,
       ),
     );
@@ -245,24 +237,31 @@ class _TermsDialog extends StatelessWidget {
               children: [
                 // Header
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: const BoxDecoration(
                     color: Color(0xFF222222),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(12),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Text('Terms and Conditions',
-                          style: GoogleFonts.raleway(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          )),
+                      Text(
+                        'Terms and Conditions',
+                        style: GoogleFonts.raleway(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                       const Spacer(),
                       IconButton(
                         onPressed: onClose,
                         icon: const Icon(Icons.close, color: Colors.white),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -272,7 +271,10 @@ class _TermsDialog extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Text(
                       _termsText,
-                      style: GoogleFonts.raleway(color: Colors.white70, height: 1.35),
+                      style: GoogleFonts.raleway(
+                        color: Colors.white70,
+                        height: 1.35,
+                      ),
                     ),
                   ),
                 ),

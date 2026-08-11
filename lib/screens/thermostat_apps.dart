@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../widgets/atmospheric_dark_background.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ThermostatAppData {
   final String thermostatName;
   final String appName;
-  final String imageAsset;   // e.g. assets/images/hmt5_wifi.png
-  final String iosUrl;       // Apple App Store URL
-  final String androidUrl;   // Google Play URL
+  final String imageAsset; // e.g. assets/images/hmt5_wifi.png
+  final String iosUrl; // Apple App Store URL
+  final String androidUrl; // Google Play URL
   final double paddingTop;
 
   const ThermostatAppData({
@@ -60,7 +61,6 @@ final List<ThermostatAppData> thermostatAppList = [
 ];
 
 bool get _isIOS => !kIsWeb && Platform.isIOS;
-bool get _isAndroid => !kIsWeb && Platform.isAndroid;
 
 /// Chooses the correct store URL for the current platform (defaults to Android on web).
 String _storeUrlForPlatform(ThermostatAppData app) {
@@ -89,46 +89,66 @@ String _cornerLogoForPlatform() {
 class ThermostatAppsScreen extends StatelessWidget {
   const ThermostatAppsScreen({super.key});
 
+  static const _accentColor = Color(0xFFE9882A);
+
   @override
   Widget build(BuildContext context) {
-    final gradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [
-        Colors.white.withOpacity(0.4),
-        const Color(0xFF333333).withOpacity(0.6),
-      ],
-    );
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('Thermostat Apps', style: GoogleFonts.raleway()),
-        backgroundColor: const Color(0xFF333333),
-        foregroundColor: Colors.white,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-      ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset('assets/images/diagonalpatternbg.jpg', fit: BoxFit.cover),
-          ),
-          Positioned.fill(
-            child: Container(decoration: BoxDecoration(gradient: gradient)),
-          ),
-          Column(
-            children: [
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 90),
-                  itemCount: thermostatAppList.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 24),
-                  itemBuilder: (_, i) => _ThermostatAppCard(app: thermostatAppList[i]),
-                ),
+        toolbarHeight: 78,
+        titleSpacing: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Thermostat Apps',
+              style: GoogleFonts.raleway(
+                color: Colors.white,
+                fontSize: 23,
+                fontWeight: FontWeight.w700,
               ),
-            ],
+            ),
+            const SizedBox(height: 3),
+            Text(
+              'Find the correct app for your thermostat',
+              style: GoogleFonts.raleway(
+                color: atmosphericSecondaryText,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF101111),
+        foregroundColor: _accentColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leadingWidth: 64,
+        leading: IconButton(
+          onPressed: () => Navigator.maybePop(context),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: _accentColor,
+            size: 30,
+          ),
+        ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: Icon(Icons.phone_android_rounded, color: _accentColor),
           ),
         ],
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+      ),
+      body: AtmosphericDarkBackground(
+        accentColor: _accentColor,
+        child: ListView.separated(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 90),
+          itemCount: thermostatAppList.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 18),
+          itemBuilder: (_, i) => _ThermostatAppCard(app: thermostatAppList[i]),
+        ),
       ),
     );
   }
@@ -159,8 +179,12 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
 
     return Card(
       elevation: 6,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Colors.white.withOpacity(0.95),
+      shadowColor: Colors.black,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: atmosphericBorder),
+      ),
+      color: atmosphericSurface,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () => setState(() => expanded = !expanded),
@@ -172,7 +196,9 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
-                  padding: EdgeInsets.only(top: widget.app.paddingTop > 0 ? widget.app.paddingTop : 20),
+                  padding: EdgeInsets.only(
+                    top: widget.app.paddingTop > 0 ? widget.app.paddingTop : 20,
+                  ),
                   child: ClipRRect(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(16),
@@ -193,7 +219,7 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
                     style: GoogleFonts.raleway(
                       fontSize: 20,
                       fontWeight: FontWeight.w400,
-                      color: Colors.black87,
+                      color: atmosphericPrimaryText,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -202,7 +228,10 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: Text(
                     widget.app.appName,
-                    style: GoogleFonts.raleway(fontSize: 15, color: Colors.black54),
+                    style: GoogleFonts.raleway(
+                      fontSize: 15,
+                      color: atmosphericSecondaryText,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -217,12 +246,15 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: Colors.transparent,
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.transparent),
+                              border: Border.all(
+                                color: const Color(0xFFE2E2E2),
+                              ),
                             ),
                             child: QrImageView(
-                              data: storeUrl,        // QR points to the correct store for platform
+                              data:
+                                  storeUrl, // QR points to the correct store for platform
                               version: QrVersions.auto,
                               size: 180,
                               gapless: true,
@@ -242,7 +274,9 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
                       ),
                     ),
                   ),
-                  crossFadeState: expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                  crossFadeState: expanded
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
                   duration: const Duration(milliseconds: 250),
                 ),
               ],
@@ -255,11 +289,11 @@ class _ThermostatAppCardState extends State<_ThermostatAppCard> {
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0),
+                  color: Colors.white.withValues(alpha: 0),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0),
+                      color: Colors.black.withValues(alpha: 0),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     ),

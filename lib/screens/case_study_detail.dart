@@ -12,6 +12,8 @@ import 'package:shimmer/shimmer.dart';
 import 'case_studies.dart';
 // --- IMPORT YOUR NEW PDF VIEWER SCREEN ---
 import '../widgets/pdf_viewer_screen.dart'; // Adjust path if needed
+import '../widgets/classic_share_icon.dart';
+import '../widgets/atmospheric_dark_background.dart';
 
 // --- HELPER FUNCTIONS FOR OFFLINE ASSETS ---
 
@@ -20,15 +22,18 @@ Future<File> _copyAssetToTempFile(String assetPath) async {
   final dir = await getTemporaryDirectory();
   final file = File('${dir.path}/${assetPath.split('/').last}');
   final byteData = await rootBundle.load(assetPath);
-  await file.writeAsBytes(byteData.buffer.asUint8List(
-    byteData.offsetInBytes,
-    byteData.lengthInBytes,
-  ));
+  await file.writeAsBytes(
+    byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
+  );
   return file;
 }
 
 /// Shares the PDF asset.
-Future<void> _shareAsset(BuildContext context, CaseStudy study, void Function(String) toast) async {
+Future<void> _shareAsset(
+  BuildContext context,
+  CaseStudy study,
+  void Function(String) toast,
+) async {
   try {
     toast('Preparing to share...');
     final tempFile = await _copyAssetToTempFile(study.pdfAssetPath);
@@ -39,11 +44,17 @@ Future<void> _shareAsset(BuildContext context, CaseStudy study, void Function(St
 }
 
 /// Saves the PDF asset to the device's public "Downloads" folder.
-Future<void> _saveAsset(BuildContext context, CaseStudy study, void Function(String) toast) async {
+Future<void> _saveAsset(
+  BuildContext context,
+  CaseStudy study,
+  void Function(String) toast,
+) async {
   try {
     toast('Preparing file...');
     final byteData = await rootBundle.load(study.pdfAssetPath);
-    final sanitizedFileName = study.title.replaceAll(RegExp(r'[^\w\s.-]+'), '').replaceAll(' ', '_');
+    final sanitizedFileName = study.title
+        .replaceAll(RegExp(r'[^\w\s.-]+'), '')
+        .replaceAll(' ', '_');
     await FileSaver.instance.saveFile(
       name: sanitizedFileName,
       bytes: byteData.buffer.asUint8List(),
@@ -69,7 +80,6 @@ void _viewAsset(BuildContext context, CaseStudy study) {
   );
 }
 
-
 class CaseStudyDetailScreen extends StatelessWidget {
   final String? caseStudyId;
   const CaseStudyDetailScreen({super.key, required this.caseStudyId});
@@ -78,9 +88,7 @@ class CaseStudyDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     void showToast(String msg) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
 
     // Find the study or use a fallback. Note the updated field names.
@@ -89,7 +97,8 @@ class CaseStudyDetailScreen extends StatelessWidget {
       orElse: () => const CaseStudy(
         id: 'missing',
         title: 'Case Study Not Found',
-        imageAssetPath: 'assets/images/front_image.jpg', // A safe fallback image
+        imageAssetPath:
+            'assets/images/front_image.jpg', // A safe fallback image
         summary: '',
         categories: [],
         projectDetails: 'The requested case study could not be found.',
@@ -104,103 +113,133 @@ class CaseStudyDetailScreen extends StatelessWidget {
         : const Color(0xFFf89f37);
 
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        toolbarHeight: 78,
         title: Text(
           study.title,
-          style: GoogleFonts.raleway(),
+          style: GoogleFonts.raleway(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        backgroundColor: const Color(0xFFf89f37),
+        backgroundColor: const Color(0xFF101111),
         foregroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.maybePop(context),
+          icon: Icon(Icons.arrow_back_rounded, color: titleColor, size: 30),
+        ),
         actions: [
           // Only show share button if a valid PDF exists
           if (study.pdfAssetPath.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.share),
+              icon: ClassicShareIcon(color: titleColor),
               tooltip: 'Share PDF',
               onPressed: () => _shareAsset(context, study, showToast),
             ),
         ],
       ),
-      body: ListView(
-        children: [
-          // --- UPDATED to use Image.asset ---
-          if (study.imageAssetPath.isNotEmpty)
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.asset(
-                study.imageAssetPath,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  // The shimmer placeholder acts as a great error state
-                  return _ShimmerPlaceholder();
-                },
+      body: AtmosphericDarkBackground(
+        accentColor: titleColor,
+        child: ListView(
+          children: [
+            // --- UPDATED to use Image.asset ---
+            if (study.imageAssetPath.isNotEmpty)
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.asset(
+                  study.imageAssetPath,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    // The shimmer placeholder acts as a great error state
+                    return _ShimmerPlaceholder();
+                  },
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _DetailSection(
+                    title: 'The Project',
+                    content: study.projectDetails,
+                    titleColor: titleColor,
+                  ),
+                  if (study.challenge.isNotEmpty)
+                    _DetailSection(
+                      title: 'The Challenge',
+                      content: study.challenge,
+                      titleColor: titleColor,
+                    ),
+                  if (study.solution.isNotEmpty)
+                    _DetailSection(
+                      title: 'The Solution',
+                      content: study.solution,
+                      titleColor: titleColor,
+                    ),
+                  const SizedBox(height: 8),
+
+                  // --- UPDATED: New button layout for offline experience ---
+                  if (study.pdfAssetPath.isNotEmpty) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _viewAsset(context, study),
+                        icon: const Icon(Icons.picture_as_pdf_outlined),
+                        label: Text(
+                          'View Full Case Study PDF',
+                          style: GoogleFonts.raleway(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: titleColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _saveAsset(context, study, showToast),
+                        icon: const Icon(Icons.download_for_offline_outlined),
+                        label: Text(
+                          'Save PDF to Device',
+                          style: GoogleFonts.raleway(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: titleColor,
+                          side: BorderSide(color: titleColor),
+                          backgroundColor: const Color(0xFF181919),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ] else
+                    Text(
+                      'No PDF available for this case study.',
+                      style: GoogleFonts.raleway(color: Colors.grey),
+                    ),
+                ],
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                _DetailSection(
-                  title: 'The Project',
-                  content: study.projectDetails,
-                  titleColor: titleColor,
-                ),
-                if (study.challenge.isNotEmpty)
-                  _DetailSection(
-                    title: 'The Challenge',
-                    content: study.challenge,
-                    titleColor: titleColor,
-                  ),
-                if (study.solution.isNotEmpty)
-                  _DetailSection(
-                    title: 'The Solution',
-                    content: study.solution,
-                    titleColor: titleColor,
-                  ),
-                const SizedBox(height: 24),
-                
-                // --- UPDATED: New button layout for offline experience ---
-                if (study.pdfAssetPath.isNotEmpty) ...[
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _viewAsset(context, study),
-                      icon: const Icon(Icons.picture_as_pdf_outlined),
-                      label: Text('View Full Case Study PDF', style: GoogleFonts.raleway(fontWeight: FontWeight.w600)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFf89f37),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _saveAsset(context, study, showToast),
-                      icon: const Icon(Icons.download_for_offline_outlined),
-                      label: Text('Save PDF to Device', style: GoogleFonts.raleway(fontWeight: FontWeight.w600)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFf89f37),
-                        side: const BorderSide(color: Color(0xFFf89f37)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                  ),
-                ] else
-                  Text(
-                    'No PDF available for this case study.',
-                    style: GoogleFonts.raleway(color: Colors.grey),
-                  ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -219,26 +258,51 @@ class _DetailSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (content.trim().isEmpty) return const SizedBox.shrink(); // Hide section if no content
+    if (content.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF171818), Color(0xFF232424)],
+        ),
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.60),
+            blurRadius: 15,
+            spreadRadius: 1,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: GoogleFonts.raleway(
-                fontSize: 20,
-                fontWeight: FontWeight.w400,
-                color: titleColor,
-              )),
+          Text(
+            title,
+            style: GoogleFonts.raleway(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: titleColor,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text(content,
-              style: GoogleFonts.raleway(
-                fontSize: 16,
-                color: Colors.black87,
-                height: 1.45,
-              )),
+          Text(
+            content,
+            style: GoogleFonts.raleway(
+              fontSize: 16,
+              color: const Color(0xFFD0D0D0),
+              height: 1.45,
+            ),
+          ),
         ],
       ),
     );

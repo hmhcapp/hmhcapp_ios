@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../widgets/atmospheric_dark_background.dart';
+
+const checklistAccentColor = Color(0xFFE9882A);
+const checklistBackgroundColor = Colors.black;
+const checklistTextColor = atmosphericPrimaryText;
 
 // ===== MODELS =====
 class ChecklistItem {
@@ -41,15 +46,23 @@ class ChecklistStepPage extends StatelessWidget {
         if (i == 0) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
-            child: Text(step.title,
-                style: GoogleFonts.raleway(fontSize: 22, fontWeight: FontWeight.w400)),
+            child: Text(
+              step.title,
+              style: GoogleFonts.raleway(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: checklistTextColor,
+              ),
+            ),
           );
         }
         final item = items[i - 1];
         return _ChecklistItemRow(
           item: item,
           onToggle: () => onToggle(item.id),
-          onActionClick: item.actionRoute == null ? null : () => onNavigate?.call(item.actionRoute!),
+          onActionClick: item.actionRoute == null
+              ? null
+              : () => onNavigate?.call(item.actionRoute!),
         );
       },
     );
@@ -72,7 +85,14 @@ class _ChecklistItemRow extends StatelessWidget {
     final mainTap = onActionClick ?? onToggle;
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: atmosphericSurface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.68),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: atmosphericBorder),
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: mainTap,
@@ -83,20 +103,34 @@ class _ChecklistItemRow extends StatelessWidget {
               IconButton(
                 onPressed: onToggle,
                 icon: Icon(
-                  item.isChecked ? Icons.check_circle : Icons.radio_button_unchecked,
-                  color: item.isChecked ? const Color(0xFF4CAF50) : Colors.grey,
+                  item.isChecked
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
+                  color: item.isChecked
+                      ? checklistAccentColor
+                      : atmosphericSecondaryText,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(item.text, style: GoogleFonts.raleway(fontSize: 16)),
+                child: Text(
+                  item.text,
+                  style: GoogleFonts.raleway(
+                    fontSize: 16,
+                    color: checklistTextColor,
+                  ),
+                ),
               ),
               if (onActionClick != null) ...[
                 const SizedBox(width: 8),
-                Icon(Icons.calculate, color: Theme.of(context).colorScheme.primary),
+                const Icon(Icons.calculate, color: checklistAccentColor),
                 const SizedBox(width: 4),
-                Icon(Icons.arrow_forward_ios, size: 16, color: Theme.of(context).colorScheme.primary),
-              ]
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: checklistAccentColor,
+                ),
+              ],
             ],
           ),
         ),
@@ -123,26 +157,53 @@ class ChecklistCompletionPage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 96),
+            const Icon(
+              Icons.check_circle,
+              color: checklistAccentColor,
+              size: 96,
+            ),
             const SizedBox(height: 16),
-            Text('Installation Checklist Complete!',
-                style: GoogleFonts.raleway(fontSize: 22, fontWeight: FontWeight.w400),
-                textAlign: TextAlign.center),
+            Text(
+              'Installation Checklist Complete!',
+              style: GoogleFonts.raleway(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: checklistTextColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
-            Text('The final step is to register the product warranty.',
-                style: GoogleFonts.raleway(fontSize: 16),
-                textAlign: TextAlign.center),
+            Text(
+              'The final step is to register the product warranty.',
+              style: GoogleFonts.raleway(
+                fontSize: 16,
+                color: checklistTextColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
                 onPressed: onRegisterWarranty,
-                style: FilledButton.styleFrom(backgroundColor: const Color(0xFFF4BE25)),
-                child: Text('Register Warranty', style: GoogleFonts.raleway(color: Colors.black)),
+                style: FilledButton.styleFrom(
+                  backgroundColor: checklistAccentColor,
+                  foregroundColor: Colors.white,
+                ),
+                child: Text(
+                  'Register Warranty',
+                  style: GoogleFonts.raleway(fontWeight: FontWeight.w600),
+                ),
               ),
             ),
             const SizedBox(height: 12),
-            TextButton(onPressed: onFinish, child: const Text('Finish & Exit')),
+            TextButton(
+              onPressed: onFinish,
+              style: TextButton.styleFrom(
+                foregroundColor: checklistAccentColor,
+              ),
+              child: const Text('Finish & Exit'),
+            ),
           ],
         ),
       ),

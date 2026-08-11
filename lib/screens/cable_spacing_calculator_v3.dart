@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../widgets/atmospheric_dark_background.dart';
+
 class CableInfo {
   final String productCode;
   final double length;
@@ -12,10 +14,7 @@ class CableSpacingRule {
   final double minSpacing;
   final double maxSpacing;
 
-  const CableSpacingRule({
-    required this.minSpacing,
-    required this.maxSpacing,
-  });
+  const CableSpacingRule({required this.minSpacing, required this.maxSpacing});
 }
 
 final pkc3Cables = <CableInfo>[
@@ -160,8 +159,11 @@ class _CableSpacingCalculatorScreenState
       return;
     }
     final options = _filteredCableOptions(selectedCableType);
-    final stillValid = selectedCable1 != null &&
-        options.any((cable) => cable.productCode == selectedCable1!.productCode);
+    final stillValid =
+        selectedCable1 != null &&
+        options.any(
+          (cable) => cable.productCode == selectedCable1!.productCode,
+        );
     if (!stillValid) {
       selectedCable1 = null;
     }
@@ -191,193 +193,260 @@ class _CableSpacingCalculatorScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(
-          'Cable Spacing Calculator',
-          style: GoogleFonts.raleway(color: Colors.white),
+        toolbarHeight: 78,
+        titleSpacing: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Cable Spacing Calculator',
+              style: GoogleFonts.raleway(
+                color: Colors.white,
+                fontSize: 23,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              'Calculate optimal cable spacing for your installation',
+              style: GoogleFonts.raleway(
+                color: atmosphericSecondaryText,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
         ),
-        backgroundColor: appBarColor,
-        leading: const BackButton(color: Colors.white),
-        actions: const [
+        backgroundColor: const Color(0xFF101111),
+        foregroundColor: appBarColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leadingWidth: 64,
+        leading: IconButton(
+          onPressed: () => Navigator.maybePop(context),
+          icon: Icon(Icons.arrow_back_rounded, color: appBarColor, size: 30),
+        ),
+        actions: [
           Padding(
-            padding: EdgeInsets.only(right: 8),
-            child: Icon(Icons.calculate, color: Colors.white),
+            padding: const EdgeInsets.only(right: 8),
+            child: Icon(Icons.calculate, color: appBarColor),
           ),
         ],
       ),
-      body: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                TextField(
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(
-                    labelText: 'Room Area (m²)',
-                    labelStyle: GoogleFonts.raleway(),
-                    border: const OutlineInputBorder(),
-                    helperText: _areaHint(),
-                    helperStyle: GoogleFonts.raleway(fontSize: 12),
-                  ),
-                  onChanged: (value) => setState(() {
-                    roomAreaInput = value;
-                    _syncSingleCableSelection();
-                  }),
-                ),
-                const SizedBox(height: 16),
-                if (!isManualEntry) ...[
-                  _CoverageGuideCard(
-                    cableType: selectedCableType,
-                    singleCableArea: _maxSingleCableArea(selectedCableType),
-                    roomArea: _roomArea,
-                  ),
-                  const SizedBox(height: 12),
-                  FormDropDown(
-                    label: 'Select Cable Type',
-                    options: cableDataMap.keys.toList(),
-                    selectedOption: selectedCableType,
-                    enabled: _hasValidRoomArea,
-                    onOptionSelected: (value) {
-                      setState(() {
-                        selectedCableType = value;
-                        _syncSingleCableSelection();
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                Opacity(
-                  opacity: _hasValidRoomArea ? 1 : 0.55,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Enter total length manually',
-                          style: GoogleFonts.raleway(),
+      body: Theme(
+        data: atmosphericDarkTheme(context, accent: appBarColor),
+        child: AtmosphericDarkBackground(
+          accentColor: appBarColor,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: Column(
+                  children: [
+                    _CalculatorIntroCard(accentColor: appBarColor),
+                    const SizedBox(height: 12),
+                    TextField(
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Room Area (m²)',
+                        hintText: 'Enter the room area',
+                        labelStyle: GoogleFonts.raleway(
+                          color: atmosphericSecondaryText,
+                        ),
+                        hintStyle: GoogleFonts.raleway(
+                          color: const Color(0xFFD0D0D0),
+                        ),
+                        border: const OutlineInputBorder(),
+                        helperText: _areaHint(),
+                        helperStyle: GoogleFonts.raleway(
+                          color: atmosphericSecondaryText,
+                          fontSize: 12,
                         ),
                       ),
-                      Switch(
-                        value: isManualEntry,
-                        onChanged: !_hasValidRoomArea
-                            ? null
-                            : (value) {
-                                setState(() {
-                                  isManualEntry = value;
-                                  calculatedSpacing = null;
-                                  if (!value) {
-                                    _syncSingleCableSelection();
-                                  } else {
-                                    _resetCableSelections();
-                                  }
-                                });
-                              },
+                      onChanged: (value) => setState(() {
+                        roomAreaInput = value;
+                        _syncSingleCableSelection();
+                      }),
+                    ),
+                    const SizedBox(height: 16),
+                    if (!isManualEntry) ...[
+                      _CoverageGuideCard(
+                        cableType: selectedCableType,
+                        singleCableArea: _maxSingleCableArea(selectedCableType),
+                        roomArea: _roomArea,
+                      ),
+                      const SizedBox(height: 12),
+                      FormDropDown(
+                        label: 'Select Cable Type',
+                        options: cableDataMap.keys.toList(),
+                        selectedOption: selectedCableType,
+                        enabled: _hasValidRoomArea,
+                        onOptionSelected: (value) {
+                          setState(() {
+                            selectedCableType = value;
+                            _syncSingleCableSelection();
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    Opacity(
+                      opacity: _hasValidRoomArea ? 1 : 0.55,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Enter total length manually',
+                              style: GoogleFonts.raleway(),
+                            ),
+                          ),
+                          Switch(
+                            value: isManualEntry,
+                            onChanged: !_hasValidRoomArea
+                                ? null
+                                : (value) {
+                                    setState(() {
+                                      isManualEntry = value;
+                                      calculatedSpacing = null;
+                                      if (!value) {
+                                        _syncSingleCableSelection();
+                                      } else {
+                                        _resetCableSelections();
+                                      }
+                                    });
+                                  },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (!isManualEntry) ...[
+                      if (_coverageWarning() != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              _coverageWarning()!,
+                              style: GoogleFonts.raleway(
+                                color: atmosphericSecondaryText,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: AdditionalCableSelector(
+                          label: 'Product Code 1',
+                          cableOptions: _filteredCableOptions(
+                            selectedCableType,
+                          ),
+                          selectedCable: selectedCable1,
+                          enabled: _hasValidRoomArea,
+                          onCableSelected: (value) => setState(() {
+                            selectedCable1 = value;
+                            calculatedSpacing = null;
+                          }),
+                          onClear: () => setState(() {
+                            selectedCable1 = null;
+                            calculatedSpacing = null;
+                          }),
+                        ),
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                if (!isManualEntry) ...[
-                  if (_coverageWarning() != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          _coverageWarning()!,
+                    if (isManualEntry)
+                      TextField(
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        enabled: _hasValidRoomArea,
+                        decoration: InputDecoration(
+                          labelText: 'Total Cable Length (m)',
+                          hintText: 'Enter the total cable length',
+                          labelStyle: GoogleFonts.raleway(
+                            color: atmosphericSecondaryText,
+                          ),
+                          hintStyle: GoogleFonts.raleway(
+                            color: const Color(0xFFD0D0D0),
+                          ),
+                          border: const OutlineInputBorder(),
+                        ),
+                        onChanged: (value) =>
+                            setState(() => manualLengthInput = value),
+                      ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 50,
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: isCalculating || !_hasValidRoomArea
+                            ? null
+                            : _calculate,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: appBarColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: isCalculating
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.calculate),
+                        label: Text(
+                          isCalculating
+                              ? 'Calculating...'
+                              : 'Calculate Spacing',
                           style: GoogleFonts.raleway(
-                            color: Colors.black54,
-                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: AdditionalCableSelector(
-                        label: 'Product Code 1',
-                        cableOptions: _filteredCableOptions(selectedCableType),
-                        selectedCable: selectedCable1,
-                        enabled: _hasValidRoomArea,
-                        onCableSelected: (value) => setState(() {
-                          selectedCable1 = value;
-                          calculatedSpacing = null;
-                      }),
-                      onClear: () => setState(() {
-                        selectedCable1 = null;
-                        calculatedSpacing = null;
-                      }),
-                    ),
-                  ),
-                ],
-                if (isManualEntry)
-                  TextField(
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    enabled: _hasValidRoomArea,
-                    decoration: InputDecoration(
-                      labelText: 'Total Cable Length (m)',
-                      labelStyle: GoogleFonts.raleway(),
-                      border: const OutlineInputBorder(),
-                    ),
-                    onChanged: (value) =>
-                        setState(() => manualLengthInput = value),
-                  ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  height: 50,
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed:
-                        isCalculating || !_hasValidRoomArea ? null : _calculate,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: appBarColor,
-                      foregroundColor: Colors.white,
-                    ),
-                    icon: isCalculating
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.calculate),
-                    label: Text(
-                      isCalculating ? 'Calculating...' : 'Calculate Spacing',
-                      style: GoogleFonts.raleway(fontWeight: FontWeight.bold),
+                    const SizedBox(height: 24),
+                    if (calculatedSpacing != null)
+                      _ResultCard(
+                        appBarColor: appBarColor,
+                        value: calculatedSpacing!,
+                      ),
+                    if (calculatedSpacing != null)
+                      _Visual(
+                        appBarColor: appBarColor,
+                        value: calculatedSpacing!,
+                        type: isManualEntry ? 'manual' : selectedCableType,
+                      ),
+                  ],
+                ),
+              ),
+              if (showWarningMessage)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: _WarningBanner(
+                      text: warningMessageText,
+                      color: appBarColor,
+                      onDismissed: () =>
+                          setState(() => showWarningMessage = false),
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                if (calculatedSpacing != null)
-                  _ResultCard(
-                    appBarColor: appBarColor,
-                    value: calculatedSpacing!,
-                  ),
-                if (calculatedSpacing != null)
-                  _Visual(
-                    appBarColor: appBarColor,
-                    value: calculatedSpacing!,
-                    type: isManualEntry ? 'manual' : selectedCableType,
-                  ),
-              ],
-            ),
+            ],
           ),
-          if (showWarningMessage)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: _WarningBanner(
-                text: warningMessageText,
-                color: appBarColor,
-                onDismissed: () => setState(() => showWarningMessage = false),
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }
@@ -430,6 +499,67 @@ class _CableSpacingCalculatorScreenState
   }
 }
 
+class _CalculatorIntroCard extends StatelessWidget {
+  final Color accentColor;
+
+  const _CalculatorIntroCard({required this.accentColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: accentColor.withValues(alpha: 0.1),
+        border: Border.all(color: accentColor.withValues(alpha: 0.35)),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: accentColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.calculate_outlined,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Plan your cable spacing',
+                  style: GoogleFonts.raleway(
+                    color: atmosphericPrimaryText,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Enter the heated floor area, then select the appropriate '
+                  'cable to calculate the required spacing for installation.',
+                  style: GoogleFonts.raleway(
+                    color: atmosphericSecondaryText,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class AdditionalCableSelector extends StatelessWidget {
   final String label;
   final List<CableInfo> cableOptions;
@@ -456,7 +586,7 @@ class AdditionalCableSelector extends StatelessWidget {
             value: '${cable.productCode} (${cable.length} m)',
             child: Text(
               '${cable.productCode} (${cable.length} m)',
-              style: GoogleFonts.raleway(color: Colors.black87),
+              style: GoogleFonts.raleway(color: atmosphericPrimaryText),
             ),
           ),
         )
@@ -474,7 +604,8 @@ class AdditionalCableSelector extends StatelessWidget {
             enabled: enabled,
             onOptionSelected: (display) {
               final found = cableOptions.firstWhere(
-                (cable) => '${cable.productCode} (${cable.length} m)' == display,
+                (cable) =>
+                    '${cable.productCode} (${cable.length} m)' == display,
                 orElse: () => const CableInfo('', 0),
               );
               onCableSelected(found.productCode.isEmpty ? null : found);
@@ -512,10 +643,10 @@ class _CoverageGuideCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: needsMultiple ? const Color(0xFFFFF4E4) : const Color(0xFFF6F6F6),
+        color: atmosphericSurface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: needsMultiple ? const Color(0xFFEFA528) : const Color(0xFFD9D9D9),
+          color: needsMultiple ? const Color(0xFFEFA528) : atmosphericBorder,
         ),
       ),
       child: Row(
@@ -525,7 +656,9 @@ class _CoverageGuideCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: needsMultiple ? const Color(0xFFEFA528) : const Color(0xFF555555),
+              color: needsMultiple
+                  ? const Color(0xFFEFA528)
+                  : const Color(0xFF555555),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -545,7 +678,7 @@ class _CoverageGuideCard extends StatelessWidget {
                   style: GoogleFonts.raleway(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
-                    color: const Color(0xFF333333),
+                    color: atmosphericPrimaryText,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -553,7 +686,7 @@ class _CoverageGuideCard extends StatelessWidget {
                   'With one $cableType cable, the largest practical area is about '
                   '${singleCableArea.toStringAsFixed(1)} m². Larger rooms may need a second or third cable.',
                   style: GoogleFonts.raleway(
-                    color: Colors.black87,
+                    color: atmosphericSecondaryText,
                     height: 1.35,
                   ),
                 ),
@@ -564,7 +697,7 @@ class _CoverageGuideCard extends StatelessWidget {
                         ? 'Current room area: ${area.toStringAsFixed(area % 1 == 0 ? 0 : 1)} m². This is beyond the practical single-cable area for $cableType.'
                         : 'Current room area: ${area.toStringAsFixed(area % 1 == 0 ? 0 : 1)} m².',
                     style: GoogleFonts.raleway(
-                      color: Colors.black54,
+                      color: atmosphericSecondaryText,
                       fontSize: 13,
                     ),
                   ),
@@ -590,6 +723,8 @@ class _ResultCard extends StatelessWidget {
       width: double.infinity,
       child: Card(
         elevation: 4,
+        color: atmosphericSurface,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -597,9 +732,7 @@ class _ResultCard extends StatelessWidget {
             children: [
               Text(
                 'Required Cable Spacing:',
-                style: GoogleFonts.raleway(
-                  color: Colors.black.withOpacity(0.7),
-                ),
+                style: GoogleFonts.raleway(color: atmosphericSecondaryText),
               ),
               const SizedBox(height: 8),
               Text(
@@ -726,20 +859,24 @@ class FormDropDown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedItems = items ??
+    final resolvedItems =
+        items ??
         (options ?? [])
             .map(
-              (option) => DropdownMenuItem<String>(
-                value: option,
-                child: Text(option),
-              ),
+              (option) =>
+                  DropdownMenuItem<String>(value: option, child: Text(option)),
             )
             .toList();
-    final values =
-        resolvedItems.map((item) => item.value).whereType<String>().toList();
+    final values = resolvedItems
+        .map((item) => item.value)
+        .whereType<String>()
+        .toList();
 
     return DropdownButtonFormField<String>(
       value: values.contains(selectedOption) ? selectedOption : null,
+      dropdownColor: atmosphericRaisedSurface,
+      iconEnabledColor: atmosphericSecondaryText,
+      style: GoogleFonts.raleway(color: atmosphericPrimaryText),
       items: resolvedItems,
       onChanged: enabled
           ? (value) {
@@ -748,9 +885,12 @@ class FormDropDown extends StatelessWidget {
           : null,
       decoration: InputDecoration(
         labelText: label,
+        hintText: 'Please select...',
+        labelStyle: GoogleFonts.raleway(color: atmosphericSecondaryText),
+        hintStyle: GoogleFonts.raleway(color: const Color(0xFFD0D0D0)),
         border: const OutlineInputBorder(),
         filled: !enabled,
-        fillColor: enabled ? null : Colors.grey.shade200,
+        fillColor: enabled ? null : atmosphericRaisedSurface,
       ),
     );
   }

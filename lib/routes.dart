@@ -81,33 +81,71 @@ class Routes {
   static const registerWarranty = '/register_warranty';
   static const loyaltyScheme = '/loyalty_scheme';
 
+  static Route<dynamic> _horizontalSlideRoute(
+    RouteSettings settings,
+    Widget page,
+  ) {
+    return PageRouteBuilder<dynamic>(
+      settings: settings,
+      transitionDuration: const Duration(milliseconds: 320),
+      reverseTransitionDuration: const Duration(milliseconds: 280),
+      pageBuilder: (_, animation, secondaryAnimation) => page,
+      transitionsBuilder: (_, animation, secondaryAnimation, child) {
+        final incomingPosition = Tween<Offset>(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(animation);
+        final outgoingPosition =
+            Tween<Offset>(begin: Offset.zero, end: const Offset(-1, 0))
+                .chain(CurveTween(curve: Curves.easeInOutCubic))
+                .animate(secondaryAnimation);
+
+        return SlideTransition(
+          position: outgoingPosition,
+          child: SlideTransition(position: incomingPosition, child: child),
+        );
+      },
+    );
+  }
+
+  static Route<dynamic> _stationaryRoute(RouteSettings settings, Widget page) {
+    return PageRouteBuilder<dynamic>(
+      settings: settings,
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+      pageBuilder: (_, animation, secondaryAnimation) => page,
+    );
+  }
+
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       // --- Entry / Auth ---
       case home:
-        return MaterialPageRoute(builder: (_) => HomeScreen());
+        return _stationaryRoute(settings, const HomeScreen());
 
       case login:
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
+        return _stationaryRoute(settings, const LoginScreen());
 
       case register:
-        return MaterialPageRoute(builder: (_) => const RegisterScreen());
+        return _stationaryRoute(settings, const RegisterScreen());
 
       case resetPassword:
-        return MaterialPageRoute(builder: (_) => const ResetPasswordScreen());
+        return _stationaryRoute(settings, const ResetPasswordScreen());
 
       case profile:
-        return MaterialPageRoute(builder: (_) => const ProfileScreen());
+        return _stationaryRoute(settings, const ProfileScreen());
 
       // --- Factsheets ---
       case productCategorySelection:
-        return MaterialPageRoute(
-          builder: (_) => const ProductCategorySelectionScreen(),
+        return _horizontalSlideRoute(
+          settings,
+          const ProductCategorySelectionScreen(),
         );
 
       case underfloorHeatingFactsheetsRoute:
-        return MaterialPageRoute(
-          builder: (_) => ProductFactsheetsScreen(
+        return _horizontalSlideRoute(
+          settings,
+          ProductFactsheetsScreen(
             categoryTitle: 'Underfloor Heating Factsheets',
             appBarColor: const Color(0xFFDD4F2E),
             factsheetData:
@@ -116,8 +154,9 @@ class Routes {
         );
 
       case frostProtectionFactsheetsRoute:
-        return MaterialPageRoute(
-          builder: (_) => ProductFactsheetsScreen(
+        return _horizontalSlideRoute(
+          settings,
+          ProductFactsheetsScreen(
             categoryTitle: 'Frost Protection Factsheets',
             appBarColor: const Color(0xFF009ADC),
             factsheetData: frostProtectionFactsheetsData,
@@ -126,13 +165,15 @@ class Routes {
 
       // --- Instructions ---
       case productInstructionCategorySelection:
-        return MaterialPageRoute(
-          builder: (_) => const InstructionCategorySelectionScreen(),
+        return _horizontalSlideRoute(
+          settings,
+          const InstructionCategorySelectionScreen(),
         );
 
       case underfloorHeatingInstructionsRoute:
-        return MaterialPageRoute(
-          builder: (_) => ProductInstructionsScreen(
+        return _horizontalSlideRoute(
+          settings,
+          ProductInstructionsScreen(
             categoryTitle: 'Underfloor Heating Instructions',
             appBarColor: const Color(0xFFE26A2D),
             instructionData: underfloorHeatingInstructionsData,
@@ -140,8 +181,9 @@ class Routes {
         );
 
       case frostProtectionInstructionsRoute:
-        return MaterialPageRoute(
-          builder: (_) => ProductInstructionsScreen(
+        return _horizontalSlideRoute(
+          settings,
+          ProductInstructionsScreen(
             categoryTitle: 'Frost Protection Instructions',
             appBarColor: const Color(0xFF009ADC),
             instructionData: frostProtectionInstructionsData,
@@ -150,61 +192,64 @@ class Routes {
 
       // --- Installer Tools + subpages ---
       case installerTools:
-        return MaterialPageRoute(builder: (_) => const InstallerToolsScreen());
+        return _horizontalSlideRoute(settings, const InstallerToolsScreen());
 
       case heatingMatPlanner:
-        return MaterialPageRoute(
-          builder: (_) => const HeatingMatPlannerScreen(),
-        );
+        return _horizontalSlideRoute(settings, const HeatingMatPlannerScreen());
 
       case floorDiagrams:
-        return MaterialPageRoute(builder: (_) => const FloorDiagramsScreen());
+        return _horizontalSlideRoute(settings, const FloorDiagramsScreen());
 
       case floorSensorCalculator:
-        return MaterialPageRoute(
-          builder: (_) => const FloorSensorCalculatorScreen(),
+        return _horizontalSlideRoute(
+          settings,
+          const FloorSensorCalculatorScreen(),
         );
 
       case cableSpacingCalculator:
-        return MaterialPageRoute(
-          builder: (_) => const CableSpacingCalculatorScreen(),
+        return _horizontalSlideRoute(
+          settings,
+          const CableSpacingCalculatorScreen(),
         );
 
       case installationVideo:
-        return MaterialPageRoute(
-          builder: (_) => const InstallationVideoScreen(),
-        );
+        return _horizontalSlideRoute(settings, const InstallationVideoScreen());
 
       case thermostatApps:
-        return MaterialPageRoute(builder: (_) => const ThermostatAppsScreen());
+        return _horizontalSlideRoute(settings, const ThermostatAppsScreen());
 
       case installationChecklistHub:
-        return MaterialPageRoute(
-          builder: (_) => const InstallationChecklistHubScreen(),
+        return _horizontalSlideRoute(
+          settings,
+          const InstallationChecklistHubScreen(),
         );
 
       case heatingMatChecklist:
-        return MaterialPageRoute(
-          builder: (_) => const HeatingMatChecklistScreen(),
+        return _horizontalSlideRoute(
+          settings,
+          const HeatingMatChecklistScreen(),
         );
 
       case heatingCableChecklist:
-        return MaterialPageRoute(
-          builder: (_) => const HeatingCableChecklistScreen(),
+        return _horizontalSlideRoute(
+          settings,
+          const HeatingCableChecklistScreen(),
         );
 
       // --- Get a Quote hub (tabs) ---
       case getAQuoteCategorySelection:
         // Optional tab index via arguments (0=new quote, 1=saved)
         final initialTabIndex = (settings.arguments as int?) ?? 0;
-        return MaterialPageRoute(
-          builder: (_) => QuoteScreen(initialTabIndex: initialTabIndex),
+        return _horizontalSlideRoute(
+          settings,
+          QuoteScreen(initialTabIndex: initialTabIndex),
         );
 
       // --- Quote Forms ---
       case underfloorHeatingQuote:
-        return MaterialPageRoute(
-          builder: (_) => const QuoteFormScreen(
+        return _horizontalSlideRoute(
+          settings,
+          const QuoteFormScreen(
             categoryTitle: 'Underfloor Heating Quote',
             appBarColor: Color(0xFFF8B637),
             categoryRoute: Routes.underfloorHeatingQuote,
@@ -212,8 +257,9 @@ class Routes {
         );
 
       case frostProtectionQuote:
-        return MaterialPageRoute(
-          builder: (_) => const QuoteFormScreen(
+        return _horizontalSlideRoute(
+          settings,
+          const QuoteFormScreen(
             categoryTitle: 'Frost Protection Quote',
             appBarColor: Color(0xFF009ADC),
             categoryRoute: Routes.frostProtectionQuote,
@@ -221,8 +267,9 @@ class Routes {
         );
 
       case mirrorDemisterQuote:
-        return MaterialPageRoute(
-          builder: (_) => const QuoteFormScreen(
+        return _horizontalSlideRoute(
+          settings,
+          const QuoteFormScreen(
             categoryTitle: 'Mirror Demister Quote',
             appBarColor: Color(0xFF8BC34A),
             categoryRoute: Routes.mirrorDemisterQuote,
@@ -230,8 +277,9 @@ class Routes {
         );
 
       case otherProductsQuote:
-        return MaterialPageRoute(
-          builder: (_) => const QuoteFormScreen(
+        return _horizontalSlideRoute(
+          settings,
+          const QuoteFormScreen(
             categoryTitle: 'Other Products Quote',
             appBarColor: Color(0xFFE88A2B),
             categoryRoute: Routes.otherProductsQuote,
@@ -247,19 +295,21 @@ class Routes {
 
       // --- Case Studies ---
       case caseStudies:
-        return MaterialPageRoute(builder: (_) => const CaseStudiesScreen());
+        return _horizontalSlideRoute(settings, const CaseStudiesScreen());
 
       case caseStudyDetail:
         final id = settings.arguments as String?;
-        return MaterialPageRoute(
-          builder: (_) => CaseStudyDetailScreen(caseStudyId: id),
+        return _horizontalSlideRoute(
+          settings,
+          CaseStudyDetailScreen(caseStudyId: id),
         );
 
       // --- Register Warranty ---
       case Routes.registerWarranty:
         final initialTab = (settings.arguments as int?) ?? 0;
-        return MaterialPageRoute(
-          builder: (_) => RegisterWarrantyScreen(initialTabIndex: initialTab),
+        return _horizontalSlideRoute(
+          settings,
+          RegisterWarrantyScreen(initialTabIndex: initialTab),
         );
 
       case loyaltyScheme:

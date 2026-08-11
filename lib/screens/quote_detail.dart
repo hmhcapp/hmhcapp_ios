@@ -4,6 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../models/quote.dart';
+import '../widgets/atmospheric_dark_background.dart';
+
+const _quoteBackground = Colors.black;
+const _quoteAccent = Color(0xFFE9882A);
+const _quoteText = atmosphericPrimaryText;
+const _quoteMutedText = atmosphericSecondaryText;
+const _quoteDivider = atmosphericBorder;
 
 class QuoteDetailScreen extends StatefulWidget {
   final String quoteId;
@@ -92,15 +99,15 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
       timestamp: (m['timestamp'] is int)
           ? m['timestamp']
           : (m['timestamp'] as Timestamp?)?.millisecondsSinceEpoch ??
-              DateTime.now().millisecondsSinceEpoch,
+                DateTime.now().millisecondsSinceEpoch,
     );
   }
 
   Color _catColor(String t) {
-    if (t.contains('Underfloor')) return const Color(0xFFF8B637);
+    if (t.contains('Underfloor')) return const Color(0xFFF4BE25);
     if (t.contains('Frost')) return const Color(0xFF009ADC);
     if (t.contains('Mirror')) return const Color(0xFF8BC34A);
-    if (t.contains('Other')) return const Color(0xFFE88A2B);
+    if (t.contains('Other')) return const Color(0xFFE26A2D);
     return const Color(0xFF666666);
   }
 
@@ -121,164 +128,169 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _quoteBackground,
       appBar: AppBar(
-        title:
-            Text('Quote Details', style: GoogleFonts.raleway(color: Colors.white)),
-        backgroundColor: const Color(0xFF333333),
+        title: Text(
+          'Quote Details',
+          style: GoogleFonts.raleway(color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF101111),
         foregroundColor: Colors.white,
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset('assets/images/diagonalpatternbg.jpg',
-                fit: BoxFit.cover),
-          ),
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.white.withOpacity(0.4),
-                    const Color(0xFF333333).withOpacity(0.6),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
-          ),
-          if (_loading)
-            const Center(child: CircularProgressIndicator())
-          else if (_error != null)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Text(
-                  _error!,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.raleway(color: Colors.red),
-                ),
-              ),
-            )
-          else if (_quote == null)
-            Center(
-              child: Text(
-                'No quote data.',
-                style: GoogleFonts.raleway(),
-              ),
-            )
-          else
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Header card
-                  Card(
-                    color: _catColor(_quote!.categoryTitle),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_quote!.categoryTitle,
-                              style: GoogleFonts.raleway(
+      body: Theme(
+        data: atmosphericDarkTheme(context, accent: _quoteAccent),
+        child: AtmosphericDarkBackground(
+          accentColor: _quoteAccent,
+          child: Stack(
+            children: [
+              if (_loading)
+                const Center(
+                  child: CircularProgressIndicator(color: _quoteAccent),
+                )
+              else if (_error != null)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Text(
+                      _error!,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.raleway(color: Colors.red),
+                    ),
+                  ),
+                )
+              else if (_quote == null)
+                Center(
+                  child: Text('No quote data.', style: GoogleFonts.raleway()),
+                )
+              else
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Header card
+                      Card(
+                        color: _catColor(_quote!.categoryTitle),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _quote!.categoryTitle,
+                                style: GoogleFonts.raleway(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 20)),
-                          const SizedBox(height: 6),
-                          Text('Ref: ${_quote!.id}',
-                              style: GoogleFonts.raleway(
-                                  color: Colors.white70, fontSize: 14)),
+                                  fontSize: 20,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Ref: ${_quote!.id}',
+                                style: GoogleFonts.raleway(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Contact Details
+                      _DetailCard(
+                        title: 'Your Details',
+                        children: [
+                          _row('Name', _quote!.name),
+                          _row('Company', _quote!.company),
+                          _row('Email', _quote!.email),
+                          _row('Phone', _quote!.telephone),
+                          _row('Postcode', _quote!.postcode),
+                          _row('Distributor', _quote!.distributor),
                         ],
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                  // Contact Details
-                  _DetailCard(
-                    title: 'Your Details',
-                    children: [
-                      _row('Name', _quote!.name),
-                      _row('Company', _quote!.company),
-                      _row('Email', _quote!.email),
-                      _row('Phone', _quote!.telephone),
-                      _row('Postcode', _quote!.postcode),
-                      _row('Distributor', _quote!.distributor),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Project Details
-                  _DetailCard(
-                    title: 'Project Details',
-                    children: [
-                      _row('Project Name', _quote!.projectName),
-                      _row('Project Stage', _quote!.projectStage),
-                      _row('Items Needed By', _quote!.itemsNeededDate),
-                      _row(
-                        'Submitted On',
-                        DateTime.fromMillisecondsSinceEpoch(_quote!.timestamp)
-                            .toLocal()
-                            .toString()
-                            .split(' ')
-                            .first,
+                      // Project Details
+                      _DetailCard(
+                        title: 'Project Details',
+                        children: [
+                          _row('Project Name', _quote!.projectName),
+                          _row('Project Stage', _quote!.projectStage),
+                          _row('Items Needed By', _quote!.itemsNeededDate),
+                          _row(
+                            'Submitted On',
+                            DateTime.fromMillisecondsSinceEpoch(
+                              _quote!.timestamp,
+                            ).toLocal().toString().split(' ').first,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                  // Additional Info
-                  _DetailCard(
-                    title: 'Additional Information',
-                    children: [
-                      if (_quote!.additionalInfo.trim().isEmpty)
-                        Text('No additional information provided.',
-                            style: GoogleFonts.raleway(color: Colors.grey))
-                      else
-                        Text(_quote!.additionalInfo,
-                            style: GoogleFonts.raleway(fontSize: 16)),
-                    ],
-                  ),
+                      // Additional Info
+                      _DetailCard(
+                        title: 'Additional Information',
+                        children: [
+                          if (_quote!.additionalInfo.trim().isEmpty)
+                            Text(
+                              'No additional information provided.',
+                              style: GoogleFonts.raleway(color: Colors.grey),
+                            )
+                          else
+                            Text(
+                              _quote!.additionalInfo,
+                              style: GoogleFonts.raleway(fontSize: 16),
+                            ),
+                        ],
+                      ),
 
-                  // Submitted Plan Image + View button
-                  if (_imageDownloadUrl != null) ...[
-                    const SizedBox(height: 16),
-                    _DetailCard(
-                      title: 'Submitted Plan',
-                      children: [
-                        GestureDetector(
-                          onTap: _openFullScreen,
-                          child: Hero(
-                            tag: 'quote_img_${_quote!.id}',
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                _imageDownloadUrl!,
-                                fit: BoxFit.contain,
+                      // Submitted Plan Image + View button
+                      if (_imageDownloadUrl != null) ...[
+                        const SizedBox(height: 16),
+                        _DetailCard(
+                          title: 'Submitted Plan',
+                          children: [
+                            GestureDetector(
+                              onTap: _openFullScreen,
+                              child: Hero(
+                                tag: 'quote_img_${_quote!.id}',
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    _imageDownloadUrl!,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton.icon(
-                            onPressed: _openFullScreen,
-                            icon: const Icon(Icons.fullscreen),
-                            label: Text('View attachment',
-                                style: GoogleFonts.raleway()),
-                          ),
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton.icon(
+                                onPressed: _openFullScreen,
+                                icon: const Icon(Icons.fullscreen),
+                                label: Text(
+                                  'View attachment',
+                                  style: GoogleFonts.raleway(),
+                                ),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: _quoteAccent,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-        ],
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -291,12 +303,22 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-              width: 140,
-              child: Text(label,
-                  style: GoogleFonts.raleway(
-                      fontWeight: FontWeight.w600, color: Colors.black54))),
+            width: 140,
+            child: Text(
+              label,
+              style: GoogleFonts.raleway(
+                fontWeight: FontWeight.w600,
+                color: _quoteText,
+              ),
+            ),
+          ),
           const SizedBox(width: 8),
-          Expanded(child: Text(value, style: GoogleFonts.raleway())),
+          Expanded(
+            child: Text(
+              value,
+              style: GoogleFonts.raleway(color: _quoteMutedText),
+            ),
+          ),
         ],
       ),
     );
@@ -311,18 +333,30 @@ class _DetailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.white.withOpacity(0.85),
+      color: atmosphericSurface,
+      surfaceTintColor: Colors.transparent,
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: _quoteDivider),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
               style: GoogleFonts.raleway(
-                  fontWeight: FontWeight.bold, fontSize: 18)),
-          const Divider(height: 20),
-          ...children,
-        ]),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: _quoteText,
+              ),
+            ),
+            const Divider(height: 20, color: _quoteDivider),
+            ...children,
+          ],
+        ),
       ),
     );
   }
@@ -354,10 +388,7 @@ class _ImageViewerPage extends StatelessWidget {
           maxScale: 5,
           child: Hero(
             tag: heroTag,
-            child: Image.network(
-              imageUrl,
-              fit: BoxFit.contain,
-            ),
+            child: Image.network(imageUrl, fit: BoxFit.contain),
           ),
         ),
       ),

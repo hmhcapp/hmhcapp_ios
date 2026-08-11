@@ -2,7 +2,7 @@
 // ignore_for_file: type=lint
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+    show defaultTargetPlatform, kDebugMode, kIsWeb, TargetPlatform;
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -24,7 +24,7 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return android;
+        return kDebugMode ? androidSandbox : android;
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
@@ -60,10 +60,17 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBctUozeKBLzBatrc81ZBb5g3euo250koI',
-    appId: '1:59927376997:android:b52578e0b1a7d16e43c28c',
+    appId: '1:59927376997:android:6ce1188757d2a76d43c28c',
     messagingSenderId: '59927376997',
     projectId: 'hm-hc-app',
     storageBucket: 'hm-hc-app.firebasestorage.app',
   );
 
+  static const FirebaseOptions androidSandbox = FirebaseOptions(
+    apiKey: 'AIzaSyBctUozeKBLzBatrc81ZBb5g3euo250koI',
+    appId: '1:59927376997:android:601f306887dfd69243c28c',
+    messagingSenderId: '59927376997',
+    projectId: 'hm-hc-app',
+    storageBucket: 'hm-hc-app.firebasestorage.app',
+  );
 }

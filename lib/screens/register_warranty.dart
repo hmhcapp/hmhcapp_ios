@@ -12,13 +12,16 @@ import 'package:open_filex/open_filex.dart';
 import 'dart:io';
 
 import '../routes.dart';
+import '../widgets/classic_share_icon.dart';
+import '../widgets/atmospheric_dark_background.dart';
 
-const _dark = Color(0xFF333333);
-const _black = Color(0xFF000000);
-const _gold = Color(0xFFF1B227);
+const _dark = Color(0xFF101111);
+const _background = Colors.black;
+const _accent = Color(0xFFE9882A);
+const _text = atmosphericPrimaryText;
+const _mutedText = atmosphericSecondaryText;
 const _white = Colors.white;
-const _cardGrey = Color(0xFF6C6767);
-const _labelWhite = Colors.white70;
+const _divider = atmosphericBorder;
 
 /// Warranty data model used in Saved Warranties list rendering
 class WarrantyItem {
@@ -89,8 +92,19 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
   String _productType = '';
   String _productDetails = '';
   final List<String> _roomOptions = const [
-    'Bathroom', 'Bedroom', 'Conservatory', 'Dining Room', 'Ensuite', 'Garden Room',
-    'Hall', 'Kitchen', 'Kitchen/Diner', 'Landing', 'Living Room', 'Utility', 'Other'
+    'Bathroom',
+    'Bedroom',
+    'Conservatory',
+    'Dining Room',
+    'Ensuite',
+    'Garden Room',
+    'Hall',
+    'Kitchen',
+    'Kitchen/Diner',
+    'Landing',
+    'Living Room',
+    'Utility',
+    'Other',
   ];
   final Set<String> _selectedRooms = {};
   final _floorAreaCtrl = TextEditingController();
@@ -127,7 +141,11 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
       overlays: [SystemUiOverlay.top],
     );
 
-    _tabController = TabController(length: 2, vsync: this, initialIndex: widget.initialTabIndex);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
     _prefillInstallerFromProfile();
   }
 
@@ -170,25 +188,33 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
         if (_installerNameCtrl.text.isEmpty) {
-          _installerNameCtrl.text = (data['fullName'] ?? '').toString();
+          _installerNameCtrl.text =
+              (data['fullName'] ?? data['name'] ?? user.displayName ?? '')
+                  .toString();
         }
         if (_installerCompanyCtrl.text.isEmpty) {
-          _installerCompanyCtrl.text = (data['companyName'] ?? '').toString();
+          _installerCompanyCtrl.text =
+              (data['companyName'] ?? data['company'] ?? '').toString();
         }
         if (_installerPhoneCtrl.text.isEmpty) {
-          _installerPhoneCtrl.text = (data['phoneNumber'] ?? '').toString();
+          _installerPhoneCtrl.text =
+              (data['phoneNumber'] ?? data['phone'] ?? '').toString();
         }
       }
     } catch (_) {}
   }
 
-  bool get _isGuest => _auth.currentUser == null || _auth.currentUser!.isAnonymous;
+  bool get _isGuest =>
+      _auth.currentUser == null || _auth.currentUser!.isAnonymous;
 
   void _goToStep(int step) {
     setState(() => _currentStep = step);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollCtrl.animateTo(0,
-          duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+      _scrollCtrl.animateTo(
+        0,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
       switch (step) {
         case 1:
           FocusScope.of(context).requestFocus(_fnInstallerName);
@@ -225,7 +251,9 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
         final needRooms = _productType == 'Underfloor Heating';
         return _productType.isNotEmpty &&
             _productDetails.isNotEmpty &&
-            (!needRooms || (_selectedRooms.isNotEmpty && _floorAreaCtrl.text.trim().isNotEmpty));
+            (!needRooms ||
+                (_selectedRooms.isNotEmpty &&
+                    _floorAreaCtrl.text.trim().isNotEmpty));
       case 4:
         return _electricalCertifierCtrl.text.trim().isNotEmpty &&
             _rcdFitted.isNotEmpty;
@@ -248,12 +276,17 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: _gold,
-              surface: _dark,
-              onSurface: _white,
-              onPrimary: _white,
+              primary: _accent,
+              surface: atmosphericSurface,
+              onSurface: _text,
+              onPrimary: Color(0xFF17120D),
             ),
-            dialogBackgroundColor: _dark,
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: _accent),
+            ),
+            dialogTheme: const DialogThemeData(
+              backgroundColor: atmosphericSurface,
+            ),
           ),
           child: child!,
         );
@@ -338,16 +371,16 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
       await _db.collection('warranties').doc(id).set(data);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Warranty submitted!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Warranty submitted!')));
 
       _tabController.animateTo(1);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to submit warranty: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to submit warranty: $e')));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -360,17 +393,56 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
       length: 2,
       initialIndex: widget.initialTabIndex,
       child: Scaffold(
-        backgroundColor: _black,
+        backgroundColor: _background,
         appBar: AppBar(
-          backgroundColor: _black,
-          title: Text('Register a Warranty', style: GoogleFonts.raleway(color: _white)),
+          toolbarHeight: 78,
+          backgroundColor: _dark,
+          titleSpacing: 0,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          leadingWidth: 64,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Register a Warranty',
+                style: GoogleFonts.raleway(
+                  color: _white,
+                  fontSize: 23,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'Register and manage your Heat Mat warranties',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.raleway(
+                  color: _mutedText,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: _white),
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+              color: _accent,
+              size: 30,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
+          actions: const [
+            Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: Icon(Icons.workspace_premium_outlined, color: _accent),
+            ),
+          ],
           bottom: TabBar(
             controller: _tabController,
-            indicatorColor: _white,
+            indicatorColor: _accent,
             labelColor: _white,
             unselectedLabelColor: Colors.white60,
             tabs: const [
@@ -379,12 +451,15 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
             ],
           ),
         ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildNewWarranty(),
-            _SavedWarrantiesList(),
-          ],
+        body: Theme(
+          data: atmosphericDarkTheme(context, accent: _accent),
+          child: AtmosphericDarkBackground(
+            accentColor: _accent,
+            child: TabBarView(
+              controller: _tabController,
+              children: [_buildNewWarranty(), _SavedWarrantiesList()],
+            ),
+          ),
         ),
       ),
     );
@@ -401,7 +476,20 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
           child: SingleChildScrollView(
             controller: _scrollCtrl,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: _buildStepContent(),
+            child: Card(
+              color: atmosphericSurface,
+              surfaceTintColor: Colors.transparent,
+              elevation: 2,
+              shadowColor: Colors.black.withValues(alpha: 0.14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: _divider),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: _buildStepContent(),
+              ),
+            ),
           ),
         ),
         _buildBottomBar(),
@@ -416,11 +504,15 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.workspace_premium, size: 80, color: Colors.white70),
+            const Icon(Icons.workspace_premium, size: 80, color: _accent),
             const SizedBox(height: 16),
             Text(
               'Please log in to register and view your warranties.',
-              style: GoogleFonts.raleway(color: _white, fontSize: 18, fontWeight: FontWeight.w600),
+              style: GoogleFonts.raleway(
+                color: _text,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -428,8 +520,11 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
               onPressed: () {
                 Navigator.pushReplacementNamed(context, Routes.login);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: _gold),
-              child: Text('Login / Register', style: GoogleFonts.raleway(color: _black)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _accent,
+                foregroundColor: _white,
+              ),
+              child: Text('Login / Register', style: GoogleFonts.raleway()),
             ),
           ],
         ),
@@ -438,7 +533,14 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
   }
 
   Widget _buildStepper() {
-    final steps = const ['Installer', 'Customer', 'Product', 'Electrical', 'Purchase', 'Submit'];
+    final steps = const [
+      'Installer',
+      'Customer',
+      'Product',
+      'Electrical',
+      'Purchase',
+      'Submit',
+    ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
@@ -446,16 +548,38 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
           final stepNum = i + 1;
           final isDone = stepNum < _currentStep;
           final isCurrent = stepNum == _currentStep;
-          final ballColor = (isDone || isCurrent) ? _gold : Colors.grey;
+          final ballColor = (isDone || isCurrent)
+              ? _accent
+              : const Color(0xFFB8B8B8);
           return Expanded(
             child: Column(
               children: [
                 Row(
                   children: [
-                    _circle(ballColor, isDone ? Icons.check : null, stepNum.toString(), isDone),
+                    _circle(
+                      ballColor,
+                      isDone ? Icons.check : null,
+                      stepNum.toString(),
+                      isDone,
+                    ),
                     if (i != steps.length - 1)
                       Expanded(
-                        child: Container(height: 2, color: (stepNum < _currentStep) ? _gold : Colors.grey),
+                        child: SizedBox(
+                          height: 2,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              const ColoredBox(color: atmosphericBorder),
+                              AnimatedFractionallySizedBox(
+                                duration: const Duration(milliseconds: 420),
+                                curve: Curves.easeInOutCubic,
+                                alignment: Alignment.centerLeft,
+                                widthFactor: stepNum < _currentStep ? 1 : 0,
+                                child: const ColoredBox(color: _accent),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                   ],
                 ),
@@ -468,14 +592,31 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
   }
 
   Widget _circle(Color c, IconData? icon, String fallback, bool showIcon) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOutCubic,
       width: 28,
       height: 28,
       decoration: BoxDecoration(color: c, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: showIcon
-          ? Icon(icon, size: 16, color: _white)
-          : Text(fallback, style: GoogleFonts.raleway(color: _white, fontWeight: FontWeight.bold)),
+          ? AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              child: Icon(icon, key: ValueKey(icon), size: 16, color: _white),
+            )
+          : Transform.translate(
+              offset: Offset(
+                0,
+                const {'3', '4', '5'}.contains(fallback) ? -2 : 0,
+              ),
+              child: Text(
+                fallback,
+                style: GoogleFonts.raleway(
+                  color: _white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
     );
   }
 
@@ -499,10 +640,14 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
 
   // -------- Helpers (no underline) --------
 
-  InputDecoration _decNoBorder(String label, {String? errorText, Widget? suffixIcon}) {
+  InputDecoration _decNoBorder(
+    String label, {
+    String? errorText,
+    Widget? suffixIcon,
+  }) {
     return InputDecoration(
       labelText: label,
-      labelStyle: GoogleFonts.raleway(color: _labelWhite),
+      labelStyle: GoogleFonts.raleway(color: _mutedText),
       border: InputBorder.none,
       enabledBorder: InputBorder.none,
       focusedBorder: InputBorder.none,
@@ -512,7 +657,28 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
     );
   }
 
-  TextStyle get _fieldTextStyle => GoogleFonts.raleway(color: _white);
+  InputDecoration _dateDecoration(
+    String hint, {
+    String? errorText,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: GoogleFonts.raleway(
+        color: _mutedText,
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+      ),
+      border: InputBorder.none,
+      enabledBorder: InputBorder.none,
+      focusedBorder: InputBorder.none,
+      errorText: errorText,
+      suffixIcon: suffixIcon,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+    );
+  }
+
+  TextStyle get _fieldTextStyle => GoogleFonts.raleway(color: _text);
 
   // -------- Steps --------
 
@@ -520,8 +686,14 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Step 1: Installer Details',
-            style: GoogleFonts.raleway(color: _white, fontSize: 20, fontWeight: FontWeight.w600)),
+        Text(
+          'Step 1: Installer Details',
+          style: GoogleFonts.raleway(
+            color: _text,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         const SizedBox(height: 12),
         TextField(
           focusNode: _fnInstallerName,
@@ -529,23 +701,29 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
           style: _fieldTextStyle,
           decoration: _decNoBorder(
             'Installer Full Name',
-            errorText: _showValidationErrors && _installerNameCtrl.text.trim().isEmpty ? 'Required' : null,
+            errorText:
+                _showValidationErrors && _installerNameCtrl.text.trim().isEmpty
+                ? 'Required'
+                : null,
           ),
         ),
-        const Divider(color: Colors.white24, height: 16),
+        const Divider(color: _divider, height: 16),
         TextField(
           controller: _installerCompanyCtrl,
           style: _fieldTextStyle,
           decoration: _decNoBorder('Company Name (Optional)'),
         ),
-        const Divider(color: Colors.white24, height: 16),
+        const Divider(color: _divider, height: 16),
         TextField(
           controller: _installerPhoneCtrl,
           style: _fieldTextStyle,
           keyboardType: TextInputType.phone,
           decoration: _decNoBorder(
             'Phone Number',
-            errorText: _showValidationErrors && _installerPhoneCtrl.text.trim().isEmpty ? 'Required' : null,
+            errorText:
+                _showValidationErrors && _installerPhoneCtrl.text.trim().isEmpty
+                ? 'Required'
+                : null,
           ),
         ),
       ],
@@ -556,8 +734,14 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Step 2: Customer & Address Details',
-            style: GoogleFonts.raleway(color: _white, fontSize: 20, fontWeight: FontWeight.w600)),
+        Text(
+          'Step 2: Customer & Address Details',
+          style: GoogleFonts.raleway(
+            color: _text,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         const SizedBox(height: 12),
         TextField(
           focusNode: _fnCustomerName,
@@ -565,17 +749,21 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
           style: _fieldTextStyle,
           decoration: _decNoBorder(
             'Customer Full Name',
-            errorText: _showValidationErrors && _customerNameCtrl.text.trim().isEmpty ? 'Required' : null,
+            errorText:
+                _showValidationErrors && _customerNameCtrl.text.trim().isEmpty
+                ? 'Required'
+                : null,
           ),
         ),
-        const Divider(color: Colors.white24, height: 16),
+        const Divider(color: _divider, height: 16),
         TextField(
           controller: _customerEmailCtrl,
           style: _fieldTextStyle,
           keyboardType: TextInputType.emailAddress,
           decoration: _decNoBorder(
             'Customer Email',
-            errorText: _showValidationErrors &&
+            errorText:
+                _showValidationErrors &&
                     (_customerEmailCtrl.text.trim().isEmpty ||
                         !_customerEmailCtrl.text.contains('@') ||
                         !_customerEmailCtrl.text.contains('.'))
@@ -583,22 +771,30 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
                 : null,
           ),
         ),
-        const Divider(color: Colors.white24, height: 16),
+        const Divider(color: _divider, height: 16),
         TextField(
           controller: _customerAddressCtrl,
           style: _fieldTextStyle,
           decoration: _decNoBorder(
             'Customer Address',
-            errorText: _showValidationErrors && _customerAddressCtrl.text.trim().isEmpty ? 'Required' : null,
+            errorText:
+                _showValidationErrors &&
+                    _customerAddressCtrl.text.trim().isEmpty
+                ? 'Required'
+                : null,
           ),
         ),
-        const Divider(color: Colors.white24, height: 16),
+        const Divider(color: _divider, height: 16),
         TextField(
           controller: _customerPostcodeCtrl,
           style: _fieldTextStyle,
           decoration: _decNoBorder(
             'Customer Postcode',
-            errorText: _showValidationErrors && _customerPostcodeCtrl.text.trim().isEmpty ? 'Required' : null,
+            errorText:
+                _showValidationErrors &&
+                    _customerPostcodeCtrl.text.trim().isEmpty
+                ? 'Required'
+                : null,
           ),
         ),
       ],
@@ -632,21 +828,31 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
     };
     final detailOptions = detailsMap[_productType] ?? const <String>[];
 
-    InputDecoration _dropDec(String label, {String? errorText}) => InputDecoration(
+    InputDecoration _dropDec(String label, {String? errorText}) =>
+        InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.raleway(color: _labelWhite),
+          labelStyle: GoogleFonts.raleway(color: _mutedText),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
           errorText: errorText,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 0,
+            vertical: 8,
+          ),
         );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Step 3: Product Details',
-            style: GoogleFonts.raleway(color: _white, fontSize: 20, fontWeight: FontWeight.w600)),
+        Text(
+          'Step 3: Product Details',
+          style: GoogleFonts.raleway(
+            color: _text,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         const SizedBox(height: 12),
 
         // Product Type
@@ -654,10 +860,12 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
           focusNode: _fnProductType,
           value: _productType.isEmpty ? null : _productType,
           items: productTypes
-              .map((t) => DropdownMenuItem(
-                    value: t,
-                    child: Text(t, style: GoogleFonts.raleway(color: _white)),
-                  ))
+              .map(
+                (t) => DropdownMenuItem(
+                  value: t,
+                  child: Text(t, style: GoogleFonts.raleway(color: _text)),
+                ),
+              )
               .toList(),
           onChanged: (v) {
             setState(() {
@@ -667,53 +875,100 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
               _floorAreaCtrl.clear();
             });
           },
-          dropdownColor: _cardGrey,
-          iconEnabledColor: _white,
-          style: GoogleFonts.raleway(color: _white),
-          decoration: _dropDec('Product Type', errorText: _showValidationErrors && _productType.isEmpty ? 'Required' : null),
+          dropdownColor: atmosphericRaisedSurface,
+          iconEnabledColor: _accent,
+          style: GoogleFonts.raleway(color: _text),
+          decoration: _dropDec(
+            'Product Type',
+            errorText: _showValidationErrors && _productType.isEmpty
+                ? 'Required'
+                : null,
+          ),
         ),
-        const Divider(color: Colors.white24, height: 16),
+        const Divider(color: _divider, height: 16),
 
         // Product Details
         DropdownButtonFormField<String>(
           value: _productDetails.isEmpty ? null : _productDetails,
           items: detailOptions
-              .map((t) => DropdownMenuItem(
-                    value: t,
-                    child: Text(t, style: GoogleFonts.raleway(color: _white)),
-                  ))
+              .map(
+                (t) => DropdownMenuItem(
+                  value: t,
+                  child: Text(t, style: GoogleFonts.raleway(color: _text)),
+                ),
+              )
               .toList(),
           onChanged: (v) => setState(() => _productDetails = v ?? ''),
-          dropdownColor: _cardGrey,
-          iconEnabledColor: _white,
-          style: GoogleFonts.raleway(color: _white),
-          decoration: _dropDec('Product Details', errorText: _showValidationErrors && _productDetails.isEmpty ? 'Required' : null),
+          dropdownColor: atmosphericRaisedSurface,
+          iconEnabledColor: _accent,
+          style: GoogleFonts.raleway(color: _text),
+          decoration: _dropDec(
+            'Product Details',
+            errorText: _showValidationErrors && _productDetails.isEmpty
+                ? 'Required'
+                : null,
+          ),
         ),
 
-        if (_productType == 'Underfloor Heating' && _productDetails.isNotEmpty) ...[
+        if (_productType == 'Underfloor Heating' &&
+            _productDetails.isNotEmpty) ...[
           const SizedBox(height: 12),
-          Text('Type of room(s):', style: GoogleFonts.raleway(color: _white.withOpacity(0.9))),
+          Text('Type of room(s):', style: GoogleFonts.raleway(color: _text)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
-            runSpacing: -8,
+            runSpacing: 8,
             children: _roomOptions.map((room) {
               final selected = _selectedRooms.contains(room);
-              return FilterChip(
-                selected: selected,
-                onSelected: (s) {
-                  setState(() {
-                    if (s) {
-                      _selectedRooms.add(room);
-                    } else {
-                      _selectedRooms.remove(room);
-                    }
-                  });
-                },
-                label: Text(room, style: GoogleFonts.raleway(color: _white)),
-                selectedColor: _gold.withOpacity(0.2),
-                checkmarkColor: _white,
-                backgroundColor: _cardGrey,
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () {
+                    setState(() {
+                      if (!selected) {
+                        _selectedRooms.add(room);
+                      } else {
+                        _selectedRooms.remove(room);
+                      }
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 9,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _accent.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: selected ? _accent : Colors.transparent,
+                        width: 1.5,
+                      ),
+                      boxShadow: selected
+                          ? [
+                              BoxShadow(
+                                color: _accent.withValues(alpha: 0.38),
+                                blurRadius: 11,
+                                spreadRadius: 0.5,
+                              ),
+                            ]
+                          : const [],
+                    ),
+                    child: Text(
+                      room,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.raleway(
+                        color: _text,
+                        fontWeight: selected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ),
               );
             }).toList(),
           ),
@@ -724,35 +979,47 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
             keyboardType: TextInputType.number,
             decoration: _decNoBorder(
               'Approx. floor area covered (e.g., 15m²)',
-              errorText: _showValidationErrors &&
+              errorText:
+                  _showValidationErrors &&
                       (_productType == 'Underfloor Heating') &&
-                      (_selectedRooms.isEmpty || _floorAreaCtrl.text.trim().isEmpty)
+                      (_selectedRooms.isEmpty ||
+                          _floorAreaCtrl.text.trim().isEmpty)
                   ? 'Required for UFH'
                   : null,
             ),
           ),
-          const Divider(color: Colors.white24, height: 16),
+          const Divider(color: _divider, height: 16),
         ],
       ],
     );
   }
 
   Widget _stepElectrical() {
-    InputDecoration _dropDec(String label, {String? errorText}) => InputDecoration(
+    InputDecoration _dropDec(String label, {String? errorText}) =>
+        InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.raleway(color: _labelWhite),
+          labelStyle: GoogleFonts.raleway(color: _mutedText),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
           errorText: errorText,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 0,
+            vertical: 8,
+          ),
         );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Step 4: Electrical Details',
-            style: GoogleFonts.raleway(color: _white, fontSize: 20, fontWeight: FontWeight.w600)),
+        Text(
+          'Step 4: Electrical Details',
+          style: GoogleFonts.raleway(
+            color: _text,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         const SizedBox(height: 12),
         TextField(
           focusNode: _fnCertifier,
@@ -760,25 +1027,38 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
           style: _fieldTextStyle,
           decoration: _decNoBorder(
             'Name/Company who issued Part P / Minor Works Certificate',
-            errorText: _showValidationErrors && _electricalCertifierCtrl.text.trim().isEmpty
+            errorText:
+                _showValidationErrors &&
+                    _electricalCertifierCtrl.text.trim().isEmpty
                 ? 'Required'
                 : null,
           ),
         ),
-        const Divider(color: Colors.white24, height: 16),
+        const Divider(color: _divider, height: 16),
 
         // RCD fitted (Yes/No)
         DropdownButtonFormField<String>(
           value: _rcdFitted.isEmpty ? null : _rcdFitted,
           items: const [
-            DropdownMenuItem(value: 'Yes', child: Text('Yes', style: TextStyle(color: _white))),
-            DropdownMenuItem(value: 'No', child: Text('No', style: TextStyle(color: _white))),
+            DropdownMenuItem(
+              value: 'Yes',
+              child: Text('Yes', style: TextStyle(color: _text)),
+            ),
+            DropdownMenuItem(
+              value: 'No',
+              child: Text('No', style: TextStyle(color: _text)),
+            ),
           ],
           onChanged: (v) => setState(() => _rcdFitted = v ?? ''),
-          dropdownColor: _cardGrey,
-          iconEnabledColor: _white,
-          style: GoogleFonts.raleway(color: _white),
-          decoration: _dropDec('Has an RCD been fitted?', errorText: _showValidationErrors && _rcdFitted.isEmpty ? 'Required' : null),
+          dropdownColor: atmosphericRaisedSurface,
+          iconEnabledColor: _accent,
+          style: GoogleFonts.raleway(color: _text),
+          decoration: _dropDec(
+            'Has an RCD been fitted?',
+            errorText: _showValidationErrors && _rcdFitted.isEmpty
+                ? 'Required'
+                : null,
+          ),
         ),
       ],
     );
@@ -788,8 +1068,14 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Step 5: Purchase Details',
-            style: GoogleFonts.raleway(color: _white, fontSize: 20, fontWeight: FontWeight.w600)),
+        Text(
+          'Step 5: Purchase Details',
+          style: GoogleFonts.raleway(
+            color: _text,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         const SizedBox(height: 12),
         TextField(
           focusNode: _fnWherePurchased,
@@ -797,12 +1083,13 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
           style: _fieldTextStyle,
           decoration: _decNoBorder(
             'Where Purchased?',
-            errorText: _showValidationErrors && _wherePurchasedCtrl.text.trim().isEmpty
+            errorText:
+                _showValidationErrors && _wherePurchasedCtrl.text.trim().isEmpty
                 ? 'Required'
                 : null,
           ),
         ),
-        const Divider(color: Colors.white24, height: 16),
+        const Divider(color: _divider, height: 16),
 
         // Purchase Date (readOnly)
         TextField(
@@ -810,13 +1097,16 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
           readOnly: true,
           onTap: () => _pickDate(isPurchase: true),
           style: _fieldTextStyle,
-          decoration: _decNoBorder(
+          decoration: _dateDecoration(
             'Date of Purchase',
-            errorText: _showValidationErrors && _purchaseDateCtrl.text.trim().isEmpty ? 'Required' : null,
-            suffixIcon: const Icon(Icons.calendar_today, color: _white),
+            errorText:
+                _showValidationErrors && _purchaseDateCtrl.text.trim().isEmpty
+                ? 'Required'
+                : null,
+            suffixIcon: const Icon(Icons.calendar_today, color: _accent),
           ),
         ),
-        const Divider(color: Colors.white24, height: 16),
+        const Divider(color: _divider, height: 16),
 
         // Install Date (readOnly)
         TextField(
@@ -824,13 +1114,16 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
           readOnly: true,
           onTap: () => _pickDate(isPurchase: false),
           style: _fieldTextStyle,
-          decoration: _decNoBorder(
+          decoration: _dateDecoration(
             'Date of Installation',
-            errorText: _showValidationErrors && _installDateCtrl.text.trim().isEmpty ? 'Required' : null,
-            suffixIcon: const Icon(Icons.build, color: _white),
+            errorText:
+                _showValidationErrors && _installDateCtrl.text.trim().isEmpty
+                ? 'Required'
+                : null,
+            suffixIcon: const Icon(Icons.calendar_today, color: _accent),
           ),
         ),
-        const Divider(color: Colors.white24, height: 16),
+        const Divider(color: _divider, height: 16),
 
         TextField(
           controller: _invoiceNumberCtrl,
@@ -845,11 +1138,19 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Step 6: Confirm Details',
-            style: GoogleFonts.raleway(color: _white, fontSize: 20, fontWeight: FontWeight.w600)),
+        Text(
+          'Step 6: Confirm Details',
+          style: GoogleFonts.raleway(
+            color: _text,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         const SizedBox(height: 8),
-        Text('Please review all the information below before submitting your warranty.',
-            style: GoogleFonts.raleway(color: Colors.white70)),
+        Text(
+          'Please review all the information below before submitting your warranty.',
+          style: GoogleFonts.raleway(color: _mutedText),
+        ),
 
         const SizedBox(height: 16),
         _summarySection('Installer Details', {
@@ -897,9 +1198,14 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: GoogleFonts.raleway(
-                  color: _gold, fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(
+            title,
+            style: GoogleFonts.raleway(
+              color: _accent,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
           const SizedBox(height: 8),
           ...entries.entries.map((e) => _summaryRow(e.key, e.value)),
         ],
@@ -914,14 +1220,20 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text('$label: ',
-              style: GoogleFonts.raleway(
-                  color: empty ? _gold : _white, fontWeight: FontWeight.w600)),
+          Text(
+            '$label: ',
+            style: GoogleFonts.raleway(
+              color: empty ? _accent : _text,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           if (empty) ...[
-            const Icon(Icons.warning, color: _gold, size: 16),
-            Text(' Missing', style: GoogleFonts.raleway(color: _gold)),
+            const Icon(Icons.warning, color: _accent, size: 16),
+            Text(' Missing', style: GoogleFonts.raleway(color: _accent)),
           ] else
-            Expanded(child: Text(value, style: GoogleFonts.raleway(color: _white))),
+            Expanded(
+              child: Text(value, style: GoogleFonts.raleway(color: _mutedText)),
+            ),
         ],
       ),
     );
@@ -931,7 +1243,10 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
     final totalSteps = 6;
     final isLast = _currentStep == totalSteps;
     return Container(
-      color: _dark,
+      decoration: const BoxDecoration(
+        color: atmosphericSurface,
+        border: Border(top: BorderSide(color: _divider)),
+      ),
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
       child: Row(
         children: [
@@ -940,8 +1255,8 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
               child: OutlinedButton(
                 onPressed: () => _goToStep(_currentStep - 1),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: _white),
-                  foregroundColor: _white,
+                  side: const BorderSide(color: atmosphericBorder),
+                  foregroundColor: _text,
                   minimumSize: const Size.fromHeight(50),
                 ),
                 child: const Text('Previous'),
@@ -955,7 +1270,8 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
                 ? ElevatedButton(
                     onPressed: _submitting ? null : _submitWarranty,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _gold,
+                      backgroundColor: _accent,
+                      foregroundColor: _white,
                       minimumSize: const Size.fromHeight(50),
                     ),
                     child: _submitting
@@ -963,10 +1279,16 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
                             width: 24,
                             height: 24,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2.5, color: _white),
+                              strokeWidth: 2.5,
+                              color: _white,
+                            ),
                           )
-                        : Text('Submit Warranty',
-                            style: GoogleFonts.raleway(color: _white)),
+                        : Text(
+                            'Submit Warranty',
+                            style: GoogleFonts.raleway(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   )
                 : ElevatedButton(
                     onPressed: () {
@@ -978,15 +1300,19 @@ class _RegisterWarrantyScreenState extends State<RegisterWarrantyScreen>
                         setState(() => _showValidationErrors = true);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text('Please complete all required fields.')),
+                            content: Text(
+                              'Please complete all required fields.',
+                            ),
+                          ),
                         );
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _gold,
+                      backgroundColor: _accent,
+                      foregroundColor: _white,
                       minimumSize: const Size.fromHeight(50),
                     ),
-                    child: const Text('Next', style: TextStyle(color: _white)),
+                    child: const Text('Next'),
                   ),
           ),
         ],
@@ -1012,18 +1338,26 @@ class _SavedWarrantiesList extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.workspace_premium, size: 80, color: Colors.white70),
+              const Icon(Icons.workspace_premium, size: 80, color: _accent),
               const SizedBox(height: 16),
               Text(
                 'Please log in to view your saved warranties.',
-                style: GoogleFonts.raleway(color: _white, fontSize: 18, fontWeight: FontWeight.w600),
+                style: GoogleFonts.raleway(
+                  color: _text,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () => Navigator.pushReplacementNamed(context, Routes.login),
-                style: ElevatedButton.styleFrom(backgroundColor: _gold),
-                child: Text('Login / Register', style: GoogleFonts.raleway(color: _black)),
+                onPressed: () =>
+                    Navigator.pushReplacementNamed(context, Routes.login),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: _white,
+                ),
+                child: Text('Login / Register', style: GoogleFonts.raleway()),
               ),
             ],
           ),
@@ -1041,19 +1375,23 @@ class _SavedWarrantiesList extends StatelessWidget {
       stream: q.snapshots(),
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: _white));
+          return const Center(child: CircularProgressIndicator(color: _accent));
         }
         if (snap.hasError) {
           return Center(
-            child: Text(snap.error.toString(),
-                style: GoogleFonts.raleway(color: _white)),
+            child: Text(
+              snap.error.toString(),
+              style: GoogleFonts.raleway(color: _text),
+            ),
           );
         }
         final docs = snap.data?.docs ?? [];
         if (docs.isEmpty) {
           return Center(
-            child: Text('No warranties found.',
-                style: GoogleFonts.raleway(color: _white, fontSize: 16)),
+            child: Text(
+              'No warranties found.',
+              style: GoogleFonts.raleway(color: _mutedText, fontSize: 16),
+            ),
           );
         }
         final items = docs
@@ -1072,78 +1410,106 @@ class _SavedWarrantiesList extends StatelessWidget {
 
   Widget _card(BuildContext context, WarrantyItem w) {
     return Card(
-      color: _cardGrey,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SizedBox(
-          height: 110,
-          child: Stack(
-            children: [
-              Positioned(
-                left: 0, right: 0, top: 0,
-                child: Row(
-                  children: [
-                    const Icon(Icons.workspace_premium, color: _white),
-                    const SizedBox(width: 8),
-                    Text(w.id,
-                        style: GoogleFonts.raleway(
-                            color: _white, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-              Positioned(
-                top: 40,
-                left: 0,
-                right: 0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Customer: ${w.customerName}',
-                        style: GoogleFonts.raleway(color: _white)),
-                    Text('Date: ${w.installationDate}',
-                        style: GoogleFonts.raleway(color: _white)),
-                  ],
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                child: w.pdfUrl == null
-                    ? const SizedBox(
-                        width: 24, height: 24,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2.5, color: _white),
-                      )
-                    : const Icon(Icons.check_circle, color: Color(0xFF81C784), size: 24),
-              ),
-              if (w.pdfUrl != null)
+      color: atmosphericSurface,
+      surfaceTintColor: Colors.transparent,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: _divider),
+      ),
+      elevation: 2,
+      child: InkWell(
+        onTap: () => _handleDownload(context, w),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            height: 110,
+            child: Stack(
+              children: [
                 Positioned(
-                  bottom: 0,
+                  left: 0,
                   right: 0,
+                  top: 0,
                   child: Row(
                     children: [
-                      IconButton(
-                        onPressed: () {
-                          if (w.pdfUrl != null) {
-                            Share.share('View my warranty certificate: ${w.pdfUrl}');
-                          }
-                        },
-                        icon: const Icon(Icons.share, color: _white),
-                        tooltip: 'Share',
-                      ),
-                      IconButton(
-                        onPressed: () async {
-                          await _handleDownload(context, w);
-                        },
-                        icon: const Icon(Icons.download, color: _white),
-                        tooltip: 'Save',
+                      const Icon(Icons.workspace_premium, color: _accent),
+                      const SizedBox(width: 8),
+                      Text(
+                        w.id,
+                        style: GoogleFonts.raleway(
+                          color: _text,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                 ),
-            ],
+                Positioned(
+                  top: 40,
+                  left: 0,
+                  right: 0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Customer: ${w.customerName}',
+                        style: GoogleFonts.raleway(color: _text),
+                      ),
+                      Text(
+                        'Date: ${w.installationDate}',
+                        style: GoogleFonts.raleway(color: _mutedText),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  child: w.pdfUrl == null
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: _accent,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.check_circle,
+                          color: Color(0xFF81C784),
+                          size: 24,
+                        ),
+                ),
+                if (w.pdfUrl != null)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            if (w.pdfUrl != null) {
+                              Share.share(
+                                'View my warranty certificate: ${w.pdfUrl}',
+                              );
+                            }
+                          },
+                          icon: const ClassicShareIcon(color: _accent),
+                          tooltip: 'Share',
+                        ),
+                        IconButton(
+                          onPressed: () async {
+                            await _handleDownload(context, w);
+                          },
+                          icon: const Icon(Icons.download, color: _accent),
+                          tooltip: 'Save',
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1201,9 +1567,12 @@ class _SavedWarrantiesList extends StatelessWidget {
       return ok;
     }
     return false;
-    }
+  }
 
-  Future<String?> _downloadToTemp(String url, {required String fileName}) async {
+  Future<String?> _downloadToTemp(
+    String url, {
+    required String fileName,
+  }) async {
     try {
       final uri = Uri.parse(url);
       final resp = await http.get(uri);

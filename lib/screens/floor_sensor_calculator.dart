@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' show NumberFormat;
+import '../widgets/atmospheric_dark_background.dart';
 
 const sensorLookupTemperatures = <int>[
   -10,
@@ -153,37 +154,75 @@ class _FloorSensorCalculatorScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Floor Sensor Calculator',
-          style: GoogleFonts.raleway(color: Colors.white),
+        toolbarHeight: 78,
+        titleSpacing: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Floor Sensor Calculator',
+              style: GoogleFonts.raleway(
+                color: Colors.white,
+                fontSize: 23,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              'Identify an existing NTC floor sensor',
+              style: GoogleFonts.raleway(
+                color: atmosphericSecondaryText,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
         ),
-        backgroundColor: _accentColor,
-        foregroundColor: Colors.white,
+        backgroundColor: const Color(0xFF101111),
+        foregroundColor: _accentColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leadingWidth: 64,
+        leading: IconButton(
+          onPressed: () => Navigator.maybePop(context),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: _accentColor,
+            size: 30,
+          ),
+        ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 12),
-            child: Icon(Icons.device_thermostat_outlined),
+            child: Icon(Icons.device_thermostat_outlined, color: _accentColor),
           ),
         ],
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-          children: [
-            _IntroCard(accentColor: _accentColor),
-            const SizedBox(height: 16),
-            _buildInputCard(),
-            if (_readings case final readings?) ...[
-              const SizedBox(height: 20),
-              _buildResultsCard(readings),
-              const SizedBox(height: 16),
-              _ResistanceChartCard(
-                readings: readings,
-                accentColor: _accentColor,
-              ),
-            ],
-          ],
+      body: Theme(
+        data: atmosphericDarkTheme(context, accent: _accentColor),
+        child: AtmosphericDarkBackground(
+          accentColor: _accentColor,
+          child: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              children: [
+                _IntroCard(accentColor: _accentColor),
+                const SizedBox(height: 16),
+                _buildInputCard(),
+                if (_readings case final readings?) ...[
+                  const SizedBox(height: 20),
+                  _buildResultsCard(readings),
+                  const SizedBox(height: 16),
+                  _ResistanceChartCard(
+                    readings: readings,
+                    accentColor: _accentColor,
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -205,7 +244,7 @@ class _FloorSensorCalculatorScreenState
                 style: GoogleFonts.raleway(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF333333),
+                  color: atmosphericPrimaryText,
                 ),
               ),
               const SizedBox(height: 8),
@@ -213,6 +252,15 @@ class _FloorSensorCalculatorScreenState
                 'Measure the floor sensor resistance and note the floor '
                 'temperature at the same time.',
                 style: GoogleFonts.raleway(height: 1.4),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "An NTC sensor's kΩ rating is its resistance at 25°C.",
+                style: GoogleFonts.raleway(
+                  height: 1.4,
+                  fontWeight: FontWeight.w600,
+                  color: atmosphericSecondaryText,
+                ),
               ),
               const SizedBox(height: 18),
               TextFormField(
@@ -287,7 +335,7 @@ class _FloorSensorCalculatorScreenState
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            color: const Color(0xFF333333),
+            color: atmosphericRaisedSurface,
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,7 +360,7 @@ class _FloorSensorCalculatorScreenState
           Padding(
             padding: const EdgeInsets.all(12),
             child: Table(
-              border: TableBorder.all(color: const Color(0xFFD5D5D5)),
+              border: TableBorder.all(color: atmosphericBorder),
               columnWidths: const {
                 0: FlexColumnWidth(0.8),
                 1: FlexColumnWidth(1.2),
@@ -321,7 +369,7 @@ class _FloorSensorCalculatorScreenState
                 _tableRow(
                   temperature: 'Temperature',
                   resistance: 'Resistance',
-                  color: const Color(0xFFF2F2F2),
+                  color: atmosphericRaisedSurface,
                   isHeader: true,
                 ),
                 for (final reading in readings)
@@ -372,7 +420,9 @@ class _FloorSensorCalculatorScreenState
   }) {
     final style = GoogleFonts.raleway(
       fontWeight: isHeader ? FontWeight.w700 : FontWeight.w600,
-      color: const Color(0xFF333333),
+      color: color != null && !isHeader
+          ? const Color(0xFF17120D)
+          : atmosphericPrimaryText,
     );
 
     return TableRow(
@@ -392,10 +442,10 @@ class _FloorSensorCalculatorScreenState
 
   Color? _highlightColor(int temperature) {
     return switch (temperature) {
-      5 => const Color(0xFFFCE4D6),
-      10 => const Color(0xFFF8CBAD),
-      15 => const Color(0xFFF4B084),
-      20 => const Color(0xFFFA9350),
+      5 => const Color(0xFFFFD596),
+      10 => const Color(0xFFF9B85F),
+      15 => const Color(0xFFF29835),
+      20 => const Color(0xFFE97822),
       _ => null,
     };
   }
@@ -440,7 +490,7 @@ class _IntroCard extends StatelessWidget {
                   style: GoogleFonts.raleway(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF333333),
+                    color: atmosphericPrimaryText,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -448,7 +498,10 @@ class _IntroCard extends StatelessWidget {
                   'Use one resistance reading and its measured temperature to '
                   'calculate the sensor values needed when replacing a '
                   'non-Heat Mat thermostat.',
-                  style: GoogleFonts.raleway(height: 1.4),
+                  style: GoogleFonts.raleway(
+                    height: 1.4,
+                    color: atmosphericSecondaryText,
+                  ),
                 ),
               ],
             ),
@@ -520,7 +573,7 @@ class _ResistanceChartCardState extends State<_ResistanceChartCard> {
               style: GoogleFonts.raleway(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF333333),
+                color: atmosphericPrimaryText,
               ),
             ),
             const SizedBox(height: 4),
@@ -597,7 +650,7 @@ class _ResistanceChartCardState extends State<_ResistanceChartCard> {
                         textAlign: TextAlign.center,
                         style: GoogleFonts.raleway(
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF333333),
+                          color: atmosphericPrimaryText,
                         ),
                       ),
                     ),
@@ -635,10 +688,10 @@ class _ResistanceChartPainter extends CustomPainter {
     final verticalMaximum = maximumResistance * 1.08;
 
     final gridPaint = Paint()
-      ..color = const Color(0xFFDADADA)
+      ..color = const Color(0xFF3C3E3E)
       ..strokeWidth = 1;
     final axisPaint = Paint()
-      ..color = const Color(0xFF555555)
+      ..color = const Color(0xFF9A9C9C)
       ..strokeWidth = 1.2;
 
     for (var index = 0; index <= 4; index++) {
@@ -715,7 +768,7 @@ class _ResistanceChartPainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round,
     );
 
-    final pointPaint = Paint()..color = const Color(0xFF333333);
+    final pointPaint = Paint()..color = atmosphericPrimaryText;
     for (final point in points) {
       canvas.drawCircle(point, 2.6, pointPaint);
     }
@@ -785,7 +838,7 @@ class _ResistanceChartPainter extends CustomPainter {
     final painter = TextPainter(
       text: TextSpan(
         text: text,
-        style: const TextStyle(fontSize: 10, color: Color(0xFF555555)),
+        style: const TextStyle(fontSize: 10, color: atmosphericSecondaryText),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
