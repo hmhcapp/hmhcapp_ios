@@ -10,6 +10,8 @@
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>GIDClientID</key>
+		<string>59927376997-nb9stb5a8t75pkjjmkdb4sigk56b47em.apps.googleusercontent.com</string>
 		<key>CFBundleURLTypes</key>
 		<array>
 			<dict>

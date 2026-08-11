@@ -1,11 +1,15 @@
 // lib/auth/auth_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   AuthService._();
   static final AuthService instance = AuthService._();
+
+  static const String _googleIosClientId =
+      '59927376997-nb9stb5a8t75pkjjmkdb4sigk56b47em.apps.googleusercontent.com';
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -267,7 +271,11 @@ class AuthService {
   }
 
   Future<void> _ensureGoogleInitialized() {
-    return _googleInitialization ??= GoogleSignIn.instance.initialize();
+    return _googleInitialization ??= GoogleSignIn.instance.initialize(
+      clientId: !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS
+          ? _googleIosClientId
+          : null,
+    );
   }
 
   static String _firstNonEmpty(dynamic first, dynamic second) {
